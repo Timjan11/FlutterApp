@@ -16,15 +16,11 @@ class DayDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
-  final DateFormat dateFormat = DateFormat('d MMMM yyyy'); // без локали
+  final DateFormat dateFormat = DateFormat('d MMMM yyyy');
 
   @override
   Widget build(BuildContext context) {
-    final events = ref.watch(eventProvider);
-    final eventsForDay = events.where((e) =>
-    e.date.year == widget.selectedDate.year &&
-        e.date.month == widget.selectedDate.month &&
-        e.date.day == widget.selectedDate.day).toList();
+    final eventsAsync = ref.watch(eventsForDayProvider(widget.selectedDate));
 
     return Scaffold(
       appBar: AppBar(
@@ -36,47 +32,51 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
           ),
         ],
       ),
-      body: eventsForDay.isEmpty
-          ? const Center(child: Text('Нет мероприятий на этот день'))
-          : ListView.builder(
-        itemCount: eventsForDay.length,
-        itemBuilder: (context, index) {
-          final event = eventsForDay[index];
-          return Card(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    event.title,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(event.description),
-                  const SizedBox(height: 12),
-                  const Text('Назначены:'),
-                  Wrap(
-                    spacing: 8,
-                    children: event.assignedEmployees
-                        .map((e) => Chip(
-                      label: Text(e.name),
-                      avatar: const Icon(Icons.person, size: 16),
-                    ))
-                        .toList(),
-                  ),
-                  const SizedBox(height: 12),
-                  ElevatedButton.icon(
-                    onPressed: () => _assignEmployees(context, event),
-                    icon: const Icon(Icons.people),
-                    label: const Text('Назначить сотрудников'),
-                  ),
-                ],
+      body: eventsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, stack) => Center(child: Text('Ошибка: $err')),
+        data: (eventsForDay) => eventsForDay.isEmpty
+            ? const Center(child: Text('Нет мероприятий на этот день'))
+            : ListView.builder(
+          itemCount: eventsForDay.length,
+          itemBuilder: (context, index) {
+            final event = eventsForDay[index];
+            return Card(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      event.title,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(event.description),
+                    const SizedBox(height: 12),
+                    const Text('Назначены:'),
+                    Wrap(
+                      spacing: 8,
+                      children: event.assignedEmployees
+                          .map((e) => Chip(
+                        label: Text(e.name),
+                        avatar: const Icon(Icons.person, size: 16),
+                      ))
+                          .toList(),
+                    ),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: () => _assignEmployees(context, event),
+                      icon: const Icon(Icons.people),
+                      label: const Text('Назначить сотрудников'),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -114,18 +114,16 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
             child: const Text('Отмена'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               if (formKey.currentState!.validate()) {
-                final notifier = ref.read(eventProvider.notifier);
-                final newEvent = Event(
-                  id: notifier.getNextId(),
+                await ref.read(eventActionsProvider).addEvent(Event(
+                  id: 0,
                   title: titleController.text,
                   description: descController.text,
                   date: widget.selectedDate,
                   assignedEmployees: [],
-                );
-                notifier.addEvent(newEvent);
-                Navigator.pop(context);
+                ));
+                if (mounted) Navigator.pop(context);
               }
             },
             child: const Text('Сохранить'),
@@ -136,7 +134,11 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
   }
 
   Future<void> _assignEmployees(BuildContext context, Event event) async {
-    final allEmployees = ref.read(employeeListProvider);
+    // Получаем значение из стрим-провайдера. 
+    // Если данных еще нет, используем пустой список.
+    final allEmployeesAsync = ref.read(employeeListProvider);
+    final allEmployees = allEmployeesAsync.value ?? [];
+
     final result = await showDialog<List<Employee>>(
       context: context,
       builder: (context) => AssignEmployeesDialog(
@@ -145,8 +147,7 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
       ),
     );
     if (result != null) {
-      final updated = event.copyWith(assignedEmployees: result);
-      ref.read(eventProvider.notifier).updateEvent(updated);
+      await ref.read(eventActionsProvider).updateEvent(event.copyWith(assignedEmployees: result));
     }
   }
 }
