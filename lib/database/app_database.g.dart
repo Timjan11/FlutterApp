@@ -454,7 +454,17 @@ class $EventsTable extends Events with TableInfo<$EventsTable, EventTableData> {
     requiredDuringInsert: true,
   );
   @override
-  List<GeneratedColumn> get $columns => [id, title, description, date];
+  late final GeneratedColumnWithTypeConverter<EventType, int> type =
+      GeneratedColumn<int>(
+        'type',
+        aliasedName,
+        false,
+        type: DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(0),
+      ).withConverter<EventType>($EventsTable.$convertertype);
+  @override
+  List<GeneratedColumn> get $columns => [id, title, description, date, type];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -522,6 +532,12 @@ class $EventsTable extends Events with TableInfo<$EventsTable, EventTableData> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}date'],
       )!,
+      type: $EventsTable.$convertertype.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.int,
+          data['${effectivePrefix}type'],
+        )!,
+      ),
     );
   }
 
@@ -529,6 +545,9 @@ class $EventsTable extends Events with TableInfo<$EventsTable, EventTableData> {
   $EventsTable createAlias(String alias) {
     return $EventsTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<EventType, int, int> $convertertype =
+      const EnumIndexConverter<EventType>(EventType.values);
 }
 
 class EventTableData extends DataClass implements Insertable<EventTableData> {
@@ -536,11 +555,13 @@ class EventTableData extends DataClass implements Insertable<EventTableData> {
   final String title;
   final String description;
   final DateTime date;
+  final EventType type;
   const EventTableData({
     required this.id,
     required this.title,
     required this.description,
     required this.date,
+    required this.type,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -549,6 +570,9 @@ class EventTableData extends DataClass implements Insertable<EventTableData> {
     map['title'] = Variable<String>(title);
     map['description'] = Variable<String>(description);
     map['date'] = Variable<DateTime>(date);
+    {
+      map['type'] = Variable<int>($EventsTable.$convertertype.toSql(type));
+    }
     return map;
   }
 
@@ -558,6 +582,7 @@ class EventTableData extends DataClass implements Insertable<EventTableData> {
       title: Value(title),
       description: Value(description),
       date: Value(date),
+      type: Value(type),
     );
   }
 
@@ -571,6 +596,9 @@ class EventTableData extends DataClass implements Insertable<EventTableData> {
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String>(json['description']),
       date: serializer.fromJson<DateTime>(json['date']),
+      type: $EventsTable.$convertertype.fromJson(
+        serializer.fromJson<int>(json['type']),
+      ),
     );
   }
   @override
@@ -581,6 +609,7 @@ class EventTableData extends DataClass implements Insertable<EventTableData> {
       'title': serializer.toJson<String>(title),
       'description': serializer.toJson<String>(description),
       'date': serializer.toJson<DateTime>(date),
+      'type': serializer.toJson<int>($EventsTable.$convertertype.toJson(type)),
     };
   }
 
@@ -589,11 +618,13 @@ class EventTableData extends DataClass implements Insertable<EventTableData> {
     String? title,
     String? description,
     DateTime? date,
+    EventType? type,
   }) => EventTableData(
     id: id ?? this.id,
     title: title ?? this.title,
     description: description ?? this.description,
     date: date ?? this.date,
+    type: type ?? this.type,
   );
   EventTableData copyWithCompanion(EventsCompanion data) {
     return EventTableData(
@@ -603,6 +634,7 @@ class EventTableData extends DataClass implements Insertable<EventTableData> {
           ? data.description.value
           : this.description,
       date: data.date.present ? data.date.value : this.date,
+      type: data.type.present ? data.type.value : this.type,
     );
   }
 
@@ -612,13 +644,14 @@ class EventTableData extends DataClass implements Insertable<EventTableData> {
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('description: $description, ')
-          ..write('date: $date')
+          ..write('date: $date, ')
+          ..write('type: $type')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, title, description, date);
+  int get hashCode => Object.hash(id, title, description, date, type);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -626,7 +659,8 @@ class EventTableData extends DataClass implements Insertable<EventTableData> {
           other.id == this.id &&
           other.title == this.title &&
           other.description == this.description &&
-          other.date == this.date);
+          other.date == this.date &&
+          other.type == this.type);
 }
 
 class EventsCompanion extends UpdateCompanion<EventTableData> {
@@ -634,17 +668,20 @@ class EventsCompanion extends UpdateCompanion<EventTableData> {
   final Value<String> title;
   final Value<String> description;
   final Value<DateTime> date;
+  final Value<EventType> type;
   const EventsCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
     this.description = const Value.absent(),
     this.date = const Value.absent(),
+    this.type = const Value.absent(),
   });
   EventsCompanion.insert({
     this.id = const Value.absent(),
     required String title,
     required String description,
     required DateTime date,
+    this.type = const Value.absent(),
   }) : title = Value(title),
        description = Value(description),
        date = Value(date);
@@ -653,12 +690,14 @@ class EventsCompanion extends UpdateCompanion<EventTableData> {
     Expression<String>? title,
     Expression<String>? description,
     Expression<DateTime>? date,
+    Expression<int>? type,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (title != null) 'title': title,
       if (description != null) 'description': description,
       if (date != null) 'date': date,
+      if (type != null) 'type': type,
     });
   }
 
@@ -667,12 +706,14 @@ class EventsCompanion extends UpdateCompanion<EventTableData> {
     Value<String>? title,
     Value<String>? description,
     Value<DateTime>? date,
+    Value<EventType>? type,
   }) {
     return EventsCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
       date: date ?? this.date,
+      type: type ?? this.type,
     );
   }
 
@@ -691,6 +732,11 @@ class EventsCompanion extends UpdateCompanion<EventTableData> {
     if (date.present) {
       map['date'] = Variable<DateTime>(date.value);
     }
+    if (type.present) {
+      map['type'] = Variable<int>(
+        $EventsTable.$convertertype.toSql(type.value),
+      );
+    }
     return map;
   }
 
@@ -700,7 +746,8 @@ class EventsCompanion extends UpdateCompanion<EventTableData> {
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('description: $description, ')
-          ..write('date: $date')
+          ..write('date: $date, ')
+          ..write('type: $type')
           ..write(')'))
         .toString();
   }
@@ -1277,6 +1324,7 @@ typedef $$EventsTableCreateCompanionBuilder =
       required String title,
       required String description,
       required DateTime date,
+      Value<EventType> type,
     });
 typedef $$EventsTableUpdateCompanionBuilder =
     EventsCompanion Function({
@@ -1284,6 +1332,7 @@ typedef $$EventsTableUpdateCompanionBuilder =
       Value<String> title,
       Value<String> description,
       Value<DateTime> date,
+      Value<EventType> type,
     });
 
 final class $$EventsTableReferences
@@ -1340,6 +1389,12 @@ class $$EventsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnWithTypeConverterFilters<EventType, EventType, int> get type =>
+      $composableBuilder(
+        column: $table.type,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
   Expression<bool> eventAssignmentsRefs(
     Expression<bool> Function($$EventAssignmentsTableFilterComposer f) f,
   ) {
@@ -1394,6 +1449,11 @@ class $$EventsTableOrderingComposer
     column: $table.date,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<int> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$EventsTableAnnotationComposer
@@ -1418,6 +1478,9 @@ class $$EventsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get date =>
       $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<EventType, int> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
 
   Expression<T> eventAssignmentsRefs<T extends Object>(
     Expression<T> Function($$EventAssignmentsTableAnnotationComposer a) f,
@@ -1477,11 +1540,13 @@ class $$EventsTableTableManager
                 Value<String> title = const Value.absent(),
                 Value<String> description = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
+                Value<EventType> type = const Value.absent(),
               }) => EventsCompanion(
                 id: id,
                 title: title,
                 description: description,
                 date: date,
+                type: type,
               ),
           createCompanionCallback:
               ({
@@ -1489,11 +1554,13 @@ class $$EventsTableTableManager
                 required String title,
                 required String description,
                 required DateTime date,
+                Value<EventType> type = const Value.absent(),
               }) => EventsCompanion.insert(
                 id: id,
                 title: title,
                 description: description,
                 date: date,
+                type: type,
               ),
           withReferenceMapper: (p0) => p0
               .map(

@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart';
 import '../domain/models/employee.dart' hide employees;
@@ -8,12 +7,8 @@ import '../database/daos/employee_dao.dart';
 import 'database_provider.dart';
 
 final employeeListProvider = StreamProvider<List<model.Employee>>((ref) {
-  // Если мы в вебе и база не инициализировалась, показываем статический список
-  if (kIsWeb) {
-    return Stream.value(model.employees);
-  }
-
   final employeeDao = ref.watch(employeeDaoProvider);
+
   return employeeDao.watchAllEmployees().map((list) {
     return list.map((e) => model.Employee(
       id: e.id.toString(),
@@ -36,7 +31,6 @@ class EmployeeActions {
   EmployeeActions(this._employeeDao);
 
   Future<void> seedDatabaseIfEmpty() async {
-    if (kIsWeb) return; // В вебе без WASM не сеем
     final current = await _employeeDao.getAllEmployees();
     if (current.isEmpty) {
       await _employeeDao.insertEmployees(

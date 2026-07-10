@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/foundation.dart';
 import '../domain/models/employee.dart';
+import '../domain/models/event.dart';
 
 import 'daos/employee_dao.dart';
 import 'daos/event_dao.dart';
@@ -24,6 +25,7 @@ class Events extends Table {
   TextColumn get title => text()();
   TextColumn get description => text()();
   DateTimeColumn get date => dateTime()();
+  IntColumn get type => intEnum<EventType>().withDefault(const Constant(0))();
 }
 
 class EventAssignments extends Table {
@@ -40,7 +42,7 @@ class EventAssignments extends Table {
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(
-    name: 'lab_db',
+    name: 'lab_db_final', // Снова меняем имя, чтобы избежать кеша
     web: DriftWebOptions(
       sqlite3Wasm: Uri.parse('sqlite3.wasm'),
       driftWorker: Uri.parse('drift_worker.js'),
@@ -48,5 +50,5 @@ class AppDatabase extends _$AppDatabase {
   ));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 }
