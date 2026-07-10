@@ -11,8 +11,7 @@ import 'database_provider.dart';
 final allEventsProvider = StreamProvider<List<Event>>((ref) {
   // В вебе, если нет WASM файлов, возвращаем пустой поток сразу, чтобы не висеть
   if (kIsWeb) {
-    // В будущем здесь можно возвращать данные из локального списка для тестов
-    return Stream.value([]); 
+    return Stream.value([]);
   }
 
   final eventDao = ref.watch(eventDaoProvider);
@@ -30,6 +29,8 @@ final allEventsProvider = StreamProvider<List<Event>>((ref) {
         isBusy: e.isBusy,
         status: e.status,
       )).toList(),
+      // 👇 Временное значение, пока нет поля в БД
+      type: EventType.lecture,
     )).toList();
   });
 });
@@ -53,6 +54,8 @@ final eventsForDayProvider = StreamProvider.family<List<Event>, DateTime>((ref, 
         isBusy: e.isBusy,
         status: e.status,
       )).toList(),
+      // 👇 Временное значение, пока нет поля в БД
+      type: EventType.lecture,
     )).toList();
   });
 });
@@ -67,7 +70,7 @@ class EventActions {
   EventActions(this._eventDao);
 
   Future<void> addEvent(Event event) async {
-    if (kIsWeb) return; // Временно отключаем сохранение в вебе без WASM
+    if (kIsWeb) return;
     await _eventDao.createEvent(
       EventsCompanion.insert(
         title: event.title,

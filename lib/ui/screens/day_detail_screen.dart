@@ -48,6 +48,27 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: event.type.color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          event.type.displayName,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: event.type.color,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
                     Text(
                       event.title,
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -85,6 +106,7 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
     final titleController = TextEditingController();
     final descController = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    EventType? selectedType;
 
     return showDialog(
       context: context,
@@ -105,6 +127,32 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                 decoration: const InputDecoration(labelText: 'Описание'),
                 maxLines: 3,
               ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<EventType>(
+                decoration: const InputDecoration(labelText: 'Тип мероприятия'),
+                value: selectedType,
+                items: EventType.values.map((type) {
+                  return DropdownMenuItem<EventType>(
+                    value: type,
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: type.color,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(type.displayName),
+                      ],
+                    ),
+                  );
+                }).toList(),
+                onChanged: (value) => selectedType = value,
+                validator: (v) => v == null ? 'Выберите тип' : null,
+              ),
             ],
           ),
         ),
@@ -115,15 +163,17 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
           ),
           TextButton(
             onPressed: () async {
-              if (formKey.currentState!.validate()) {
-                await ref.read(eventActionsProvider).addEvent(Event(
-                  id: 0,
+              if (formKey.currentState!.validate() && selectedType != null) {
+                final newEvent = Event(
+                  id: 0, // будет проигнорировано при добавлении
                   title: titleController.text,
                   description: descController.text,
                   date: widget.selectedDate,
                   assignedEmployees: [],
-                ));
-                if (mounted) Navigator.pop(context);
+                  type: selectedType!,
+                );
+                await ref.read(eventActionsProvider).addEvent(newEvent);
+                Navigator.pop(context);
               }
             },
             child: const Text('Сохранить'),
@@ -134,9 +184,8 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
   }
 
   Future<void> _assignEmployees(BuildContext context, Event event) async {
-    // Получаем значение из стрим-провайдера. 
-    // Если данных еще нет, используем пустой список.
-    final allEmployeesAsync = ref.read(employeeListProvider);
+    final allEmployeesAsync = ref.watch(employeeListProvider);
+    // Используем значение из стрима (если ещё нет данных, то пустой список)
     final allEmployees = allEmployeesAsync.value ?? [];
 
     final result = await showDialog<List<Employee>>(
@@ -147,7 +196,8 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
       ),
     );
     if (result != null) {
-      await ref.read(eventActionsProvider).updateEvent(event.copyWith(assignedEmployees: result));
+      final updated = event.copyWith(assignedEmployees: result);
+      await ref.read(eventActionsProvider).updateEvent(updated);
     }
   }
 }
