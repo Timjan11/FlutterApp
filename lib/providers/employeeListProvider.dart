@@ -44,4 +44,29 @@ class EmployeeActions {
       );
     }
   }
+
+  Future<void> addEmployee(model.Employee e) async {
+    await _employeeDao.addEmployee(EmployeesCompanion.insert(
+      name: e.name,
+      position: e.position,
+      imagePath: e.imagePath,
+      status: e.status,
+      isBusy: Value(e.isBusy),
+    ));
+  }
+
+  Future<void> updateEmployee(model.Employee e) async {
+    await _employeeDao.updateEmployee(EmployeeTableData(
+      id: int.parse(e.id),
+      name: e.name,
+      position: e.position,
+      imagePath: e.imagePath,
+      status: e.status,
+      isBusy: e.isBusy,
+    ));
+  }
+
+  Future<void> deleteEmployee(int id) async {
+    await _employeeDao.deleteEmployee(id);
+  }
 }

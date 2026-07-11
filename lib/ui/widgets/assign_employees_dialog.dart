@@ -17,12 +17,13 @@ class AssignEmployeesDialog extends StatefulWidget {
 }
 
 class _AssignEmployeesDialogState extends State<AssignEmployeesDialog> {
-  late Set<Employee> _selected;
+  late Set<String> _selectedIds;
 
   @override
   void initState() {
     super.initState();
-    _selected = widget.event.assignedEmployees.toSet();
+    // Сохраняем только ID выбранных сотрудников
+    _selectedIds = widget.event.assignedEmployees.map((e) => e.id).toSet();
   }
 
   @override
@@ -31,27 +32,30 @@ class _AssignEmployeesDialogState extends State<AssignEmployeesDialog> {
       title: const Text('Назначить сотрудников'),
       content: SizedBox(
         width: double.maxFinite,
-        child: ListView.builder(
-          shrinkWrap: true,
-          itemCount: widget.allEmployees.length,
-          itemBuilder: (context, index) {
-            final emp = widget.allEmployees[index];
-            final isSelected = _selected.contains(emp);
-            return CheckboxListTile(
-              title: Text(emp.name),
-              value: isSelected,
-              onChanged: (checked) {
-                setState(() {
-                  if (checked == true) {
-                    _selected.add(emp);
-                  } else {
-                    _selected.remove(emp);
-                  }
-                });
+        child: widget.allEmployees.isEmpty 
+          ? const Center(child: Text('Список сотрудников пуст'))
+          : ListView.builder(
+              shrinkWrap: true,
+              itemCount: widget.allEmployees.length,
+              itemBuilder: (context, index) {
+                final emp = widget.allEmployees[index];
+                final isSelected = _selectedIds.contains(emp.id);
+                return CheckboxListTile(
+                  title: Text(emp.name),
+                  subtitle: Text(emp.position),
+                  value: isSelected,
+                  onChanged: (checked) {
+                    setState(() {
+                      if (checked == true) {
+                        _selectedIds.add(emp.id);
+                      } else {
+                        _selectedIds.remove(emp.id);
+                      }
+                    });
+                  },
+                );
               },
-            );
-          },
-        ),
+            ),
       ),
       actions: [
         TextButton(
@@ -60,7 +64,11 @@ class _AssignEmployeesDialogState extends State<AssignEmployeesDialog> {
         ),
         TextButton(
           onPressed: () {
-            Navigator.pop(context, _selected.toList());
+            // Возвращаем список объектов Employee на основе выбранных ID
+            final result = widget.allEmployees
+                .where((e) => _selectedIds.contains(e.id))
+                .toList();
+            Navigator.pop(context, result);
           },
           child: const Text('Сохранить'),
         ),

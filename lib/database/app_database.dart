@@ -40,8 +40,14 @@ class EventAssignments extends Table {
   daos: [EmployeeDao, EventDao],
 )
 class AppDatabase extends _$AppDatabase {
-  // Используем фиксированное имя. drift_flutter автоматически найдет sqlite3.wasm в папке web/
-  AppDatabase() : super(driftDatabase(name: 'university_lab_final_db'));
+  AppDatabase() : super(driftDatabase(
+    name: 'university_lab_final_db',
+    // Обязательный параметр для работы в Chrome
+    web: DriftWebOptions(
+      sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+      driftWorker: Uri.parse('drift_worker.js'),
+    ),
+  ));
 
   @override
   int get schemaVersion => 3;

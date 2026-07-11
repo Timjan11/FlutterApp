@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_corp/domain/models/employee.dart';
+import 'package:web_corp/providers/employeeListProvider.dart';
 
-class EmployeeCard extends StatefulWidget {
+class EmployeeCard extends ConsumerStatefulWidget {
   final Employee employee;
 
   const EmployeeCard({super.key, required this.employee});
 
   @override
-  State<EmployeeCard> createState() => _EmployeeCardState();
+  ConsumerState<EmployeeCard> createState() => _EmployeeCardState();
 }
 
-class _EmployeeCardState extends State<EmployeeCard> {
+class _EmployeeCardState extends ConsumerState<EmployeeCard> {
   bool _isTapped = false;
 
   @override
@@ -18,7 +20,7 @@ class _EmployeeCardState extends State<EmployeeCard> {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: _isTapped ? 4 : 2,
-      color: Color.fromARGB(255, 170, 185, 255),
+      color: const Color.fromARGB(255, 170, 185, 255),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Column(
         children: [
@@ -30,7 +32,7 @@ class _EmployeeCardState extends State<EmployeeCard> {
             },
             borderRadius: BorderRadius.circular(16),
             child: Padding(
-              padding: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -62,35 +64,37 @@ class _EmployeeCardState extends State<EmployeeCard> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      spacing: 4,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Column(
-                          children: [
-                            Text(
-                              widget.employee.name,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            // Text(widget.employee.event),
-                            const SizedBox(height: 4),
-                            Text(
-                              widget.employee.position,
-                              style: TextStyle(fontSize: 12),
-                            ),
-                          ],
+                        Text(
+                          widget.employee.name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.employee.position,
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                        Text(
+                          'Статус: ${widget.employee.status.displayName}',
+                          style: TextStyle(fontSize: 12, color: widget.employee.status.color, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
                   ),
-                  Icon(
-                    _isTapped
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
-                    color: Colors.grey[600],
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'edit') _editEmployee(context);
+                      if (value == 'delete') _confirmDelete(context);
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(value: 'edit', child: Text('Изменить')),
+                      const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: Colors.red))),
+                    ],
                   ),
                 ],
               ),
@@ -99,35 +103,121 @@ class _EmployeeCardState extends State<EmployeeCard> {
           AnimatedCrossFade(
             firstChild: const SizedBox.shrink(),
             secondChild: Container(
+              width: double.infinity,
               padding: const EdgeInsets.fromLTRB(16, 12, 12, 16),
-
               decoration: BoxDecoration(
                 color: Colors.grey[50],
-                borderRadius: BorderRadius.only(
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(16),
                   bottomRight: Radius.circular(16),
                 ),
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Личная информация'),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      const Text('Должность: '),
-                      Text(widget.employee.position),
-                    ],
-                  ),
+                  const Text('Личная информация', style: TextStyle(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Text('ID: ${widget.employee.id}'),
+                  Text('Должность: ${widget.employee.position}'),
+                  Text('Занят: ${widget.employee.isBusy ? "Да" : "Нет"}'),
                 ],
               ),
             ),
-            crossFadeState: _isTapped
-                ? CrossFadeState.showSecond
-                : CrossFadeState.showFirst,
+            crossFadeState: _isTapped ? CrossFadeState.showSecond : CrossFadeState.showFirst,
             duration: const Duration(milliseconds: 200),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _editEmployee(BuildContext context) async {
+    final nameController = TextEditingController(text: widget.employee.name);
+    final positionController = TextEditingController(text: widget.employee.position);
+    EmployeeStatus selectedStatus = widget.employee.status;
+    bool isBusy = widget.employee.isBusy;
+    final formKey = GlobalKey<FormState>();
+
+    return showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Редактирование сотрудника'),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: nameController,
+                    decoration: const InputDecoration(labelText: 'ФИО'),
+                    validator: (v) => v!.isEmpty ? 'Введите ФИО' : null,
+                  ),
+                  TextFormField(
+                    controller: positionController,
+                    decoration: const InputDecoration(labelText: 'Должность'),
+                    validator: (v) => v!.isEmpty ? 'Введите должность' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<EmployeeStatus>(
+                    value: selectedStatus,
+                    decoration: const InputDecoration(labelText: 'Статус'),
+                    onChanged: (val) => setDialogState(() => selectedStatus = val!),
+                    items: EmployeeStatus.values.map((s) => DropdownMenuItem(
+                      value: s,
+                      child: Text(s.displayName),
+                    )).toList(),
+                  ),
+                  SwitchListTile(
+                    title: const Text('Занят'),
+                    value: isBusy,
+                    onChanged: (val) => setDialogState(() => isBusy = val),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Отмена')),
+            TextButton(
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  final actions = ref.read(employeeActionsProvider);
+                  await actions.updateEmployee(Employee(
+                    id: widget.employee.id,
+                    name: nameController.text,
+                    position: positionController.text,
+                    imagePath: widget.employee.imagePath,
+                    status: selectedStatus,
+                    isBusy: isBusy,
+                  ));
+                  if (context.mounted) Navigator.pop(context);
+                }
+              },
+              child: const Text('Сохранить'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Удаление'),
+        content: Text('Удалить сотрудника "${widget.employee.name}"?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Отмена')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Удалить', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await ref.read(employeeActionsProvider).deleteEmployee(int.parse(widget.employee.id));
+    }
   }
 }
