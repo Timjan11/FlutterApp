@@ -28,7 +28,7 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () => _showAddEventDialog(context),
+            onPressed: () => _showEventDialog(context),
           ),
         ],
       ),
@@ -49,34 +49,37 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: event.type.color,
-                            shape: BoxShape.circle,
-                          ),
+                        Row(
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(color: event.type.color, shape: BoxShape.circle),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(event.type.displayName, style: TextStyle(color: event.type.color, fontWeight: FontWeight.bold)),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          event.type.displayName,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: event.type.color,
-                          ),
+                        PopupMenuButton<String>(
+                          onSelected: (value) {
+                            if (value == 'edit') _showEventDialog(context, event: event);
+                            if (value == 'delete') _confirmDelete(context, event);
+                          },
+                          itemBuilder: (context) => [
+                            const PopupMenuItem(value: 'edit', child: Text('Изменить')),
+                            const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: Colors.red))),
+                          ],
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      event.title,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
+                    Text(event.title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     Text(event.description),
                     const SizedBox(height: 12),
-                    const Text('Назначены:'),
+                    const Text('Назначены:', style: TextStyle(fontWeight: FontWeight.w600)),
                     Wrap(
                       spacing: 8,
                       children: event.assignedEmployees
@@ -102,91 +105,96 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
     );
   }
 
-  Future<void> _showAddEventDialog(BuildContext context) async {
-    final titleController = TextEditingController();
-    final descController = TextEditingController();
+  Future<void> _showEventDialog(BuildContext context, {Event? event}) async {
+    final titleController = TextEditingController(text: event?.title);
+    final descController = TextEditingController(text: event?.description);
+    EventType selectedType = event?.type ?? EventType.lecture;
     final formKey = GlobalKey<FormState>();
-    EventType? selectedType;
 
     return showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Новое мероприятие'),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: titleController,
-                decoration: const InputDecoration(labelText: 'Название'),
-                validator: (v) => v!.isEmpty ? 'Введите название' : null,
-              ),
-              TextFormField(
-                controller: descController,
-                decoration: const InputDecoration(labelText: 'Описание'),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<EventType>(
-                decoration: const InputDecoration(labelText: 'Тип мероприятия'),
-                value: selectedType,
-                items: EventType.values.map((type) {
-                  return DropdownMenuItem<EventType>(
-                    value: type,
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 16,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: type.color,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(type.displayName),
-                      ],
-                    ),
-                  );
-                }).toList(),
-                onChanged: (value) => selectedType = value,
-                validator: (v) => v == null ? 'Выберите тип' : null,
-              ),
-            ],
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(event == null ? 'Новое мероприятие' : 'Редактирование'),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: titleController,
+                  decoration: const InputDecoration(labelText: 'Название'),
+                  validator: (v) => v!.isEmpty ? 'Введите название' : null,
+                ),
+                TextFormField(
+                  controller: descController,
+                  decoration: const InputDecoration(labelText: 'Описание'),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 16),
+                DropdownButton<EventType>(
+                  value: selectedType,
+                  isExpanded: true,
+                  onChanged: (val) => setDialogState(() => selectedType = val!),
+                  items: EventType.values.map((t) => DropdownMenuItem(value: t, child: Text(t.displayName))).toList(),
+                ),
+              ],
+            ),
           ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Отмена')),
+            TextButton(
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  final actions = ref.read(eventActionsProvider);
+                  if (event == null) {
+                    await actions.addEvent(Event(
+                      id: 0,
+                      title: titleController.text,
+                      description: descController.text,
+                      date: widget.selectedDate,
+                      assignedEmployees: [],
+                      type: selectedType,
+                    ));
+                  } else {
+                    await actions.updateEvent(event.copyWith(
+                      title: titleController.text,
+                      description: descController.text,
+                      type: selectedType,
+                    ));
+                  }
+                  if (mounted) Navigator.pop(context);
+                }
+              },
+              child: const Text('Сохранить'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Отмена'),
-          ),
-          TextButton(
-            onPressed: () async {
-              if (formKey.currentState!.validate() && selectedType != null) {
-                final newEvent = Event(
-                  id: 0, // будет проигнорировано при добавлении
-                  title: titleController.text,
-                  description: descController.text,
-                  date: widget.selectedDate,
-                  assignedEmployees: [],
-                  type: selectedType!,
-                );
-                await ref.read(eventActionsProvider).addEvent(newEvent);
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('Сохранить'),
-          ),
-        ],
       ),
     );
   }
 
+  Future<void> _confirmDelete(BuildContext context, Event event) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Удаление'),
+        content: Text('Удалить мероприятие "${event.title}"?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Отмена')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Удалить', style: TextStyle(color: Colors.red))),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await ref.read(eventActionsProvider).deleteEvent(event.id);
+    }
+  }
+
   Future<void> _assignEmployees(BuildContext context, Event event) async {
-    final allEmployeesAsync = ref.watch(employeeListProvider);
-    // Используем значение из стрима (если ещё нет данных, то пустой список)
-    final allEmployees = allEmployeesAsync.value ?? [];
+    final employeesAsync = ref.read(employeeListProvider);
+    final allEmployees = employeesAsync.value ?? [];
 
     final result = await showDialog<List<Employee>>(
       context: context,
@@ -196,8 +204,7 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
       ),
     );
     if (result != null) {
-      final updated = event.copyWith(assignedEmployees: result);
-      await ref.read(eventActionsProvider).updateEvent(updated);
+      await ref.read(eventActionsProvider).updateEvent(event.copyWith(assignedEmployees: result));
     }
   }
 }

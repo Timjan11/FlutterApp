@@ -85,4 +85,8 @@ class EventActions {
       event.assignedEmployees.map((e) => int.parse(e.id)).toList(),
     );
   }
+
+  Future<void> deleteEvent(int eventId) async {
+    await _eventDao.deleteEvent(eventId);
+  }
 }

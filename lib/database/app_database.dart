@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
-import 'package:flutter/foundation.dart';
 import '../domain/models/employee.dart';
 import '../domain/models/event.dart';
 
@@ -41,13 +40,8 @@ class EventAssignments extends Table {
   daos: [EmployeeDao, EventDao],
 )
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(driftDatabase(
-    name: 'lab_db_final', // Снова меняем имя, чтобы избежать кеша
-    web: DriftWebOptions(
-      sqlite3Wasm: Uri.parse('sqlite3.wasm'),
-      driftWorker: Uri.parse('drift_worker.js'),
-    ),
-  ));
+  // Используем фиксированное имя. drift_flutter автоматически найдет sqlite3.wasm в папке web/
+  AppDatabase() : super(driftDatabase(name: 'university_lab_final_db'));
 
   @override
   int get schemaVersion => 3;

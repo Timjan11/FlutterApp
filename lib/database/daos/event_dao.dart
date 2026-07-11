@@ -47,6 +47,15 @@ class EventDao extends DatabaseAccessor<AppDatabase> with _$EventDaoMixin {
     });
   }
 
+  Future<void> deleteEvent(int eventId) async {
+    await transaction(() async {
+      // Сначала удаляем привязки сотрудников
+      await (delete(eventAssignments)..where((t) => t.eventId.equals(eventId))).go();
+      // Затем само мероприятие
+      await (delete(events)..where((t) => t.id.equals(eventId))).go();
+    });
+  }
+
   Stream<List<EventWithEmployees>> watchAllEvents() {
     return select(events).watch().asyncMap((eventsList) async {
       return Future.wait(eventsList.map((event) async {
