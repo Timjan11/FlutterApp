@@ -45,9 +45,9 @@ class Employee {
 }
 
 final List<Employee> employees = [
-  Employee(id: '0', name: '1', position: 'Начальник', imagePath: 'assets/img/1.png',isBusy: true, status: EmployeeStatus.free),
-  Employee(id: '1', name: '2', position: 'Начальник 2', imagePath: 'assets/img/1.png', isBusy: true, status: EmployeeStatus.busy),
-  Employee(id: '2', name: '3', position: 'Старший разработчик', imagePath: 'assets/img/1.png', isBusy: false, status: EmployeeStatus.away),
-  Employee(id: '3', name: '4', position: 'Frontend разработчик', imagePath: 'assets/img/1.png', isBusy: false, status: EmployeeStatus.meeting),
-  Employee(id: '4', name: '5', position: 'UI/UX дизайнер', imagePath: 'assets/img/1.png', isBusy: false, status: EmployeeStatus.away)
+  Employee(id: '0', name: 'Эдик', position: 'Начальник', imagePath: 'assets/img/1.png',isBusy: true, status: EmployeeStatus.free),
+  Employee(id: '1', name: 'Денис', position: 'Начальник 2', imagePath: 'assets/img/1.png', isBusy: true, status: EmployeeStatus.busy),
+  Employee(id: '2', name: 'Артем', position: 'Старший разработчик', imagePath: 'assets/img/1.png', isBusy: false, status: EmployeeStatus.away),
+  Employee(id: '3', name: 'Карина', position: 'Frontend разработчик', imagePath: 'assets/img/1.png', isBusy: false, status: EmployeeStatus.meeting),
+  Employee(id: '4', name: 'Камила', position: 'UI/UX дизайнер', imagePath: 'assets/img/1.png', isBusy: false, status: EmployeeStatus.away)
 ];

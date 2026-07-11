@@ -52,7 +52,7 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
               final textColor = _getTextColor(event.type.color);
 
               return Card(
-                color: event.type.color.withOpacity(0.3),
+                color: event.type.color.withValues(alpha: 0.3),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(color: event.type.color, width: 2),
@@ -131,14 +131,13 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                         ),
                       ],
                       const SizedBox(height: 16),
-                      Divider(color: textColor.withOpacity(0.3), thickness: 1),
+                      Divider(color: textColor.withValues(alpha: 0.3), thickness: 1),
                       const SizedBox(height: 12),
 
-                      // ---- Блок назначенных сотрудников ----
+                      // ---- Назначенные сотрудники (заголовок + кнопка +) ----
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          // Слева: иконка людей + заголовок
                           Row(
                             children: [
                               Icon(Icons.people, size: 18, color: textColor),
@@ -153,7 +152,6 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                               ),
                             ],
                           ),
-                          // Справа: кнопка "+" на белом фоне (уменьшенная)
                           Container(
                             decoration: const BoxDecoration(
                               color: Colors.white,
@@ -178,24 +176,64 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                       ),
                       const SizedBox(height: 8),
 
+                      // ---- Список сотрудников с белыми контейнерами (без аватара) ----
                       if (event.assignedEmployees.isNotEmpty)
-                        Wrap(
-                          spacing: 8,
-                          children: event.assignedEmployees
-                              .map((e) => Chip(
-                            label: Text(
-                              e.name,
-                              style: TextStyle(color: textColor),
-                            ),
-                            avatar: Icon(Icons.person, size: 16, color: textColor),
-                            backgroundColor: textColor.withOpacity(0.15),
-                          ))
-                              .toList(),
+                        Column(
+                          children: event.assignedEmployees.map((e) {
+                            return Container(
+                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          e.name,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        Text(
+                                          e.position,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.black54,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 16.0),
+                                    child: IconButton(
+                                      icon: const Icon(Icons.close, size: 18),
+                                      color: Colors.red.shade400,
+                                      onPressed: () {
+                                        final updatedEmployees = event.assignedEmployees
+                                            .where((emp) => emp.id != e.id)
+                                            .toList();
+                                        ref.read(eventActionsProvider).updateEvent(
+                                          event.copyWith(assignedEmployees: updatedEmployees),
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
                         )
                       else
                         Text(
                           'Нет назначенных сотрудников',
-                          style: TextStyle(color: textColor.withOpacity(0.6)),
+                          style: TextStyle(color: textColor.withValues(alpha: 0.6)),
                         ),
                     ],
                   ),
@@ -208,7 +246,7 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
     );
   }
 
-  // ---------------------- Остальные методы без изменений ----------------------
+  // ---------------------- Диалог создания/редактирования ----------------------
   Future<void> _showEventDialog(BuildContext context, {Event? event}) async {
     final titleController = TextEditingController(text: event?.title);
     final descController = TextEditingController(text: event?.description);
@@ -247,7 +285,7 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<EventType>(
-                    value: selectedType,
+                    initialValue: selectedType,
                     decoration: const InputDecoration(labelText: 'Тип'),
                     onChanged: (val) => setDialogState(() => selectedType = val!),
                     items: EventType.values.map((t) => DropdownMenuItem(
@@ -381,18 +419,51 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
   }
 
   Future<void> _assignEmployees(BuildContext context, Event event) async {
-    final employeesAsync = ref.watch(employeeListProvider);
-    final allEmployees = employeesAsync.value ?? [];
-
     final result = await showDialog<List<Employee>>(
       context: context,
-      builder: (context) => AssignEmployeesDialog(
-        event: event,
-        allEmployees: allEmployees,
-      ),
+      builder: (context) => _AssignEmployeesDialogWithStream(event: event),
     );
     if (result != null) {
       await ref.read(eventActionsProvider).updateEvent(event.copyWith(assignedEmployees: result));
     }
+  }
+}
+
+// --------------------- Вспомогательный виджет для диалога назначения ---------------------
+class _AssignEmployeesDialogWithStream extends ConsumerStatefulWidget {
+  final Event event;
+  const _AssignEmployeesDialogWithStream({required this.event});
+
+  @override
+  ConsumerState<_AssignEmployeesDialogWithStream> createState() => _AssignEmployeesDialogWithStreamState();
+}
+
+class _AssignEmployeesDialogWithStreamState extends ConsumerState<_AssignEmployeesDialogWithStream> {
+  @override
+  Widget build(BuildContext context) {
+    final employeesAsync = ref.watch(employeeListProvider);
+
+    return employeesAsync.when(
+      data: (allEmployees) {
+        return AssignEmployeesDialog(
+          event: widget.event,
+          allEmployees: allEmployees,
+        );
+      },
+      loading: () => const AlertDialog(
+        title: Text('Назначить сотрудников'),
+        content: Center(child: CircularProgressIndicator()),
+      ),
+      error: (err, stack) => AlertDialog(
+        title: const Text('Ошибка'),
+        content: Text('Не удалось загрузить список сотрудников: $err'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Закрыть'),
+          ),
+        ],
+      ),
+    );
   }
 }

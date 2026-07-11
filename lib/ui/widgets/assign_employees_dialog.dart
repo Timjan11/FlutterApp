@@ -22,49 +22,54 @@ class _AssignEmployeesDialogState extends State<AssignEmployeesDialog> {
   @override
   void initState() {
     super.initState();
-    // Сохраняем только ID выбранных сотрудников
     _selectedIds = widget.event.assignedEmployees.map((e) => e.id).toSet();
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Назначить сотрудников'),
+      title: const Text(
+        'Назначить сотрудников',
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
       content: SizedBox(
         width: double.maxFinite,
-        child: widget.allEmployees.isEmpty 
-          ? const Center(child: Text('Список сотрудников пуст'))
-          : ListView.builder(
-              shrinkWrap: true,
-              itemCount: widget.allEmployees.length,
-              itemBuilder: (context, index) {
-                final emp = widget.allEmployees[index];
-                final isSelected = _selectedIds.contains(emp.id);
-                return CheckboxListTile(
-                  title: Text(emp.name),
-                  subtitle: Text(emp.position),
-                  value: isSelected,
-                  onChanged: (checked) {
-                    setState(() {
-                      if (checked == true) {
-                        _selectedIds.add(emp.id);
-                      } else {
-                        _selectedIds.remove(emp.id);
-                      }
-                    });
-                  },
-                );
+        child: widget.allEmployees.isEmpty
+            ? const Center(child: Text('Список сотрудников пуст'))
+            : ListView.builder(
+          shrinkWrap: true,
+          itemCount: widget.allEmployees.length,
+          itemBuilder: (context, index) {
+            final emp = widget.allEmployees[index];
+            final isSelected = _selectedIds.contains(emp.id);
+            return CheckboxListTile(
+              value: isSelected,
+              onChanged: (checked) {
+                setState(() {
+                  if (checked == true) {
+                    _selectedIds.add(emp.id);
+                  } else {
+                    _selectedIds.remove(emp.id);
+                  }
+                });
               },
-            ),
+              title: Text(emp.name),
+              subtitle: Text(emp.position),
+              secondary: const Icon(Icons.person, color: Colors.grey),
+              controlAffinity: ListTileControlAffinity.trailing,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+              dense: true,
+            );
+          },
+        ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text('Отмена'),
         ),
-        TextButton(
+        ElevatedButton(
           onPressed: () {
-            // Возвращаем список объектов Employee на основе выбранных ID
             final result = widget.allEmployees
                 .where((e) => _selectedIds.contains(e.id))
                 .toList();
