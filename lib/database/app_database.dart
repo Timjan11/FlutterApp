@@ -25,12 +25,17 @@ class Events extends Table {
   TextColumn get description => text()();
   DateTimeColumn get date => dateTime()();
   IntColumn get type => intEnum<EventType>().withDefault(const Constant(0))();
+
+  // Новые поля — nullable, чтобы существующие записи не ломались
+  DateTimeColumn get startTime => dateTime().nullable()();
+  DateTimeColumn get endTime => dateTime().nullable()();
+  TextColumn get location => text().nullable()();
 }
 
 class EventAssignments extends Table {
   IntColumn get eventId => integer().references(Events, #id)();
   IntColumn get employeeId => integer().references(Employees, #id)();
-  
+
   @override
   Set<Column> get primaryKey => {eventId, employeeId};
 }
@@ -42,7 +47,6 @@ class EventAssignments extends Table {
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(driftDatabase(
     name: 'university_lab_final_db',
-    // Обязательный параметр для работы в Chrome
     web: DriftWebOptions(
       sqlite3Wasm: Uri.parse('sqlite3.wasm'),
       driftWorker: Uri.parse('drift_worker.js'),
@@ -50,5 +54,20 @@ class AppDatabase extends _$AppDatabase {
   ));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) async {
+      await m.createAll();
+    },
+    onUpgrade: (m, from, to) async {
+      // При обновлении с версии 3 до 4 добавляем новые столбцы
+      if (from < 4) {
+        await m.addColumn(events, events.startTime);
+        await m.addColumn(events, events.endTime);
+        await m.addColumn(events, events.location);
+      }
+    },
+  );
 }

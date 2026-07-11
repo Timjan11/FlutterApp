@@ -9,46 +9,67 @@ import 'database_provider.dart';
 // Стрим-провайдер для всех мероприятий
 final allEventsProvider = StreamProvider<List<Event>>((ref) {
   final eventDao = ref.watch(eventDaoProvider);
-  
+
   return eventDao.watchAllEvents().map((list) {
-    return list.map((item) => Event(
-      id: item.event.id,
-      title: item.event.title,
-      description: item.event.description,
-      date: item.event.date,
-      type: item.event.type,
-      assignedEmployees: item.employees.map((e) => Employee(
-        id: e.id.toString(),
-        name: e.name,
-        position: e.position,
-        imagePath: e.imagePath,
-        isBusy: e.isBusy,
-        status: e.status,
-      )).toList(),
-    )).toList();
+    return list.map((item) {
+      final event = item.event;
+      // Устанавливаем значения по умолчанию, если в БД null (для старых записей)
+      final startTime = event.startTime ?? DateTime(event.date.year, event.date.month, event.date.day, 9, 0);
+      final endTime = event.endTime ?? DateTime(event.date.year, event.date.month, event.date.day, 18, 0);
+      final location = event.location ?? '';
+
+      return Event(
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        date: event.date,
+        startTime: startTime,
+        endTime: endTime,
+        location: location,
+        type: event.type,
+        assignedEmployees: item.employees.map((e) => Employee(
+          id: e.id.toString(),
+          name: e.name,
+          position: e.position,
+          imagePath: e.imagePath,
+          isBusy: e.isBusy,
+          status: e.status,
+        )).toList(),
+      );
+    }).toList();
   });
 });
 
 // Стрим-провайдер для мероприятий на день
-final eventsForDayProvider = StreamProvider.family<List<Event>, DateTime>((ref, day) {
+  final eventsForDayProvider = StreamProvider.family<List<Event>, DateTime>((ref, day) {
   final eventDao = ref.watch(eventDaoProvider);
-  
+
   return eventDao.watchEventsForDay(day).map((list) {
-    return list.map((item) => Event(
-      id: item.event.id,
-      title: item.event.title,
-      description: item.event.description,
-      date: item.event.date,
-      type: item.event.type,
-      assignedEmployees: item.employees.map((e) => Employee(
-        id: e.id.toString(),
-        name: e.name,
-        position: e.position,
-        imagePath: e.imagePath,
-        isBusy: e.isBusy,
-        status: e.status,
-      )).toList(),
-    )).toList();
+    return list.map((item) {
+      final event = item.event;
+      final startTime = event.startTime ?? DateTime(event.date.year, event.date.month, event.date.day, 9, 0);
+      final endTime = event.endTime ?? DateTime(event.date.year, event.date.month, event.date.day, 18, 0);
+      final location = event.location ?? '';
+
+      return Event(
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        date: event.date,
+        startTime: startTime,
+        endTime: endTime,
+        location: location,
+        type: event.type,
+        assignedEmployees: item.employees.map((e) => Employee(
+          id: e.id.toString(),
+          name: e.name,
+          position: e.position,
+          imagePath: e.imagePath,
+          isBusy: e.isBusy,
+          status: e.status,
+        )).toList(),
+      );
+    }).toList();
   });
 });
 
@@ -67,6 +88,9 @@ class EventActions {
         title: event.title,
         description: event.description,
         date: event.date,
+        startTime: Value(event.startTime), // обёрнуто в Value
+        endTime: Value(event.endTime),     // обёрнуто в Value
+        location: Value(event.location),   // обёрнуто в Value
         type: Value(event.type),
       ),
       event.assignedEmployees.map((e) => int.parse(e.id)).toList(),
@@ -80,6 +104,9 @@ class EventActions {
         title: event.title,
         description: event.description,
         date: event.date,
+        startTime: event.startTime,
+        endTime: event.endTime,
+        location: event.location,
         type: event.type,
       ),
       event.assignedEmployees.map((e) => int.parse(e.id)).toList(),

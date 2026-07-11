@@ -22,8 +22,8 @@ class EventDao extends DatabaseAccessor<AppDatabase> with _$EventDaoMixin {
       ])..where(eventAssignments.eventId.equals(event.id));
       final rows = await query.get();
       return EventWithEmployees(
-        event: event, 
-        employees: rows.map((row) => row.readTable(employees)).toList()
+        event: event,
+        employees: rows.map((row) => row.readTable(employees)).toList(),
       );
     }));
   }
@@ -49,9 +49,7 @@ class EventDao extends DatabaseAccessor<AppDatabase> with _$EventDaoMixin {
 
   Future<void> deleteEvent(int eventId) async {
     await transaction(() async {
-      // Сначала удаляем привязки сотрудников
       await (delete(eventAssignments)..where((t) => t.eventId.equals(eventId))).go();
-      // Затем само мероприятие
       await (delete(events)..where((t) => t.id.equals(eventId))).go();
     });
   }
@@ -71,15 +69,23 @@ class EventDao extends DatabaseAccessor<AppDatabase> with _$EventDaoMixin {
   Stream<List<EventWithEmployees>> watchEventsForDay(DateTime day) {
     final start = DateTime(day.year, day.month, day.day);
     final end = start.add(const Duration(days: 1));
-    return (select(events)..where((t) => t.date.isBetweenValues(start, end)))
-      .watch().asyncMap((eventsList) async {
-        return Future.wait(eventsList.map((event) async {
-          final query = select(employees).join([
-            innerJoin(eventAssignments, eventAssignments.employeeId.equalsExp(employees.id)),
-          ])..where(eventAssignments.eventId.equals(event.id));
-          final rows = await query.get();
-          return EventWithEmployees(event: event, employees: rows.map((row) => row.readTable(employees)).toList());
-        }));
-      });
+    // Используем isBetweenValues с корректным диапазоном [start, end)
+    // Для исключения правой границы вычитаем 1 микросекунду.
+    final endExclusive = end.subtract(const Duration(microseconds: 1));
+    return (select(events)
+      ..where((t) => t.date.isBetweenValues(start, endExclusive)))
+        .watch()
+        .asyncMap((eventsList) async {
+      return Future.wait(eventsList.map((event) async {
+        final query = select(employees).join([
+          innerJoin(eventAssignments, eventAssignments.employeeId.equalsExp(employees.id)),
+        ])..where(eventAssignments.eventId.equals(event.id));
+        final rows = await query.get();
+        return EventWithEmployees(
+          event: event,
+          employees: rows.map((row) => row.readTable(employees)).toList(),
+        );
+      }));
+    });
   }
 }
