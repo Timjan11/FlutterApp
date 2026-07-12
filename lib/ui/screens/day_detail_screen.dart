@@ -52,7 +52,7 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
               final textColor = _getTextColor(event.type.color);
 
               return Card(
-                color: event.type.color.withValues(alpha: 0.3),
+                color: event.type.color.withValues(alpha: 0.6),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(color: event.type.color, width: 2),
