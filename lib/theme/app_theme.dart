@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   static const Color primaryBlue = Color.fromARGB(255, 0, 81, 255);
@@ -23,12 +24,12 @@ class AppTheme {
     
     scaffoldBackgroundColor: backgroundColor,
     
-    appBarTheme: const AppBarTheme(
+    appBarTheme: AppBarTheme(
       backgroundColor: primaryBlue,
       foregroundColor: Colors.white,
       elevation: 0,
       centerTitle: false,
-      titleTextStyle: TextStyle(
+      titleTextStyle: GoogleFonts.montserratAlternates(
         fontSize: 20,
         fontWeight: FontWeight.bold,
         color: Colors.white
@@ -48,21 +49,23 @@ class AppTheme {
       ),
     ),
 
-    textTheme: const TextTheme(
-      titleLarge: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-      ),
-      titleMedium: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w900
-      ),
-      bodyLarge: TextStyle(
+    textTheme: GoogleFonts.montserratAlternatesTextTheme(
+      const TextTheme(
+        titleLarge: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+        titleMedium: TextStyle(
           fontSize: 18,
-          fontWeight: FontWeight.w500
-      ),
-      bodyMedium: TextStyle(
-          fontSize: 16,
+          fontWeight: FontWeight.w900
+        ),
+        bodyLarge: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w500
+        ),
+        bodyMedium: TextStyle(
+            fontSize: 16,
+        ),
       ),
     ),
   );
