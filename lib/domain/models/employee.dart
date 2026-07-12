@@ -39,15 +39,25 @@ class Employee {
   final String imagePath;
   final bool isBusy;
   final EmployeeStatus status;
+  final String? busyUntil;
+  final String? location;
 
-
-  const Employee({required this.id, required this.name, required this.position, required this.imagePath, required this.isBusy, required this.status});
+  const Employee({
+    required this.id,
+    required this.name,
+    required this.position,
+    required this.imagePath,
+    required this.isBusy,
+    required this.status,
+    this.busyUntil,
+    this.location,
+  });
 }
 
 final List<Employee> employees = [
-  Employee(id: '0', name: 'Эдик', position: 'Начальник', imagePath: 'assets/img/1.png',isBusy: true, status: EmployeeStatus.free),
-  Employee(id: '1', name: 'Денис', position: 'Начальник 2', imagePath: 'assets/img/1.png', isBusy: true, status: EmployeeStatus.busy),
-  Employee(id: '2', name: 'Артем', position: 'Старший разработчик', imagePath: 'assets/img/1.png', isBusy: false, status: EmployeeStatus.away),
-  Employee(id: '3', name: 'Карина', position: 'Frontend разработчик', imagePath: 'assets/img/1.png', isBusy: false, status: EmployeeStatus.meeting),
-  Employee(id: '4', name: 'Камила', position: 'UI/UX дизайнер', imagePath: 'assets/img/1.png', isBusy: false, status: EmployeeStatus.away)
+  Employee(id: '0', name: 'Эдик', position: 'Начальник', imagePath: 'assets/img/1.png', isBusy: true, status: EmployeeStatus.free, location: 'Каб. 404'),
+  Employee(id: '1', name: 'Денис', position: 'Начальник 2', imagePath: 'assets/img/1.png', isBusy: true, status: EmployeeStatus.busy, busyUntil: '14:00', location: 'Коворкинг'),
+  Employee(id: '2', name: 'Артем', position: 'Старший разработчик', imagePath: 'assets/img/1.png', isBusy: false, status: EmployeeStatus.away, location: 'Обед'),
+  Employee(id: '3', name: 'Карина', position: 'Frontend разработчик', imagePath: 'assets/img/1.png', isBusy: false, status: EmployeeStatus.meeting, busyUntil: '16:30', location: 'Зал заседаний'),
+  Employee(id: '4', name: 'Камила', position: 'UI/UX дизайнер', imagePath: 'assets/img/1.png', isBusy: false, status: EmployeeStatus.away, location: 'Библиотека')
 ];

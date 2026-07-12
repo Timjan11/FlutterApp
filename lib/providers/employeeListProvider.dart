@@ -17,6 +17,8 @@ final employeeListProvider = StreamProvider<List<model.Employee>>((ref) {
       imagePath: e.imagePath,
       isBusy: e.isBusy,
       status: e.status,
+      busyUntil: e.busyUntil,
+      location: e.location,
     )).toList();
   });
 });
@@ -40,6 +42,8 @@ class EmployeeActions {
           imagePath: e.imagePath,
           status: e.status,
           isBusy: Value(e.isBusy),
+          busyUntil: Value(e.busyUntil),
+          location: Value(e.location),
         )).toList(),
       );
     }
@@ -52,6 +56,8 @@ class EmployeeActions {
       imagePath: e.imagePath,
       status: e.status,
       isBusy: Value(e.isBusy),
+      busyUntil: Value(e.busyUntil),
+      location: Value(e.location),
     ));
   }
 
@@ -63,8 +69,11 @@ class EmployeeActions {
       imagePath: e.imagePath,
       status: e.status,
       isBusy: e.isBusy,
+      busyUntil: e.busyUntil,
+      location: e.location,
     ));
   }
+
 
   Future<void> deleteEmployee(int id) async {
     await _employeeDao.deleteEmployee(id);

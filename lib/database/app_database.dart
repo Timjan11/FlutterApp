@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
-import '../domain/models/employee.dart';
+import '../domain/models/employee.dart' hide employees;
 import '../domain/models/event.dart';
 
 import 'daos/employee_dao.dart';
@@ -16,6 +16,8 @@ class Employees extends Table {
   TextColumn get imagePath => text()();
   BoolColumn get isBusy => boolean().withDefault(const Constant(false))();
   IntColumn get status => intEnum<EmployeeStatus>()();
+  TextColumn get busyUntil => text().nullable()();
+  TextColumn get location => text().nullable()();
 }
 
 @DataClassName('EventTableData')
@@ -26,7 +28,6 @@ class Events extends Table {
   DateTimeColumn get date => dateTime()();
   IntColumn get type => intEnum<EventType>().withDefault(const Constant(0))();
 
-  // Новые поля — nullable, чтобы существующие записи не ломались
   DateTimeColumn get startTime => dateTime().nullable()();
   DateTimeColumn get endTime => dateTime().nullable()();
   TextColumn get location => text().nullable()();
@@ -54,7 +55,7 @@ class AppDatabase extends _$AppDatabase {
   ));
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -62,11 +63,14 @@ class AppDatabase extends _$AppDatabase {
       await m.createAll();
     },
     onUpgrade: (m, from, to) async {
-      // При обновлении с версии 3 до 4 добавляем новые столбцы
       if (from < 4) {
         await m.addColumn(events, events.startTime);
         await m.addColumn(events, events.endTime);
         await m.addColumn(events, events.location);
+      }
+      if (from < 5) {
+        await m.addColumn(employees, employees.busyUntil);
+        await m.addColumn(employees, employees.location);
       }
     },
   );

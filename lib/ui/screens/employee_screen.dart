@@ -37,6 +37,8 @@ class EmployeeScreen extends ConsumerWidget {
   Future<void> _showEmployeeDialog(BuildContext context, WidgetRef ref, {Employee? employee}) async {
     final nameController = TextEditingController(text: employee?.name);
     final positionController = TextEditingController(text: employee?.position);
+    final busyUntilController = TextEditingController(text: employee?.busyUntil);
+    final locationController = TextEditingController(text: employee?.location);
     EmployeeStatus selectedStatus = employee?.status ?? EmployeeStatus.free;
     bool isBusy = employee?.isBusy ?? false;
     final formKey = GlobalKey<FormState>();
@@ -65,7 +67,7 @@ class EmployeeScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   DropdownButtonFormField<EmployeeStatus>(
                     value: selectedStatus,
-                    decoration: const InputDecoration(labelText: 'Статус'),
+                    decoration: const InputDecoration(labelText: 'Статус (тег)'),
                     onChanged: (val) => setDialogState(() => selectedStatus = val!),
                     items: EmployeeStatus.values.map((s) => DropdownMenuItem(
                       value: s,
@@ -73,9 +75,18 @@ class EmployeeScreen extends ConsumerWidget {
                     )).toList(),
                   ),
                   SwitchListTile(
-                    title: const Text('Занят'),
+                    title: const Text('Занят сейчас'),
                     value: isBusy,
                     onChanged: (val) => setDialogState(() => isBusy = val),
+                  ),
+                  if (isBusy)
+                    TextFormField(
+                      controller: busyUntilController,
+                      decoration: const InputDecoration(labelText: 'Занят до (время/событие)'),
+                    ),
+                  TextFormField(
+                    controller: locationController,
+                    decoration: const InputDecoration(labelText: 'Местоположение'),
                   ),
                 ],
               ),
@@ -94,6 +105,8 @@ class EmployeeScreen extends ConsumerWidget {
                     imagePath: 'assets/img/1.png',
                     status: selectedStatus,
                     isBusy: isBusy,
+                    busyUntil: busyUntilController.text,
+                    location: locationController.text,
                   );
 
                   if (employee == null) {

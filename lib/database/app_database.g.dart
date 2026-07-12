@@ -75,6 +75,28 @@ class $EmployeesTable extends Employees
         type: DriftSqlType.int,
         requiredDuringInsert: true,
       ).withConverter<EmployeeStatus>($EmployeesTable.$converterstatus);
+  static const VerificationMeta _busyUntilMeta = const VerificationMeta(
+    'busyUntil',
+  );
+  @override
+  late final GeneratedColumn<String> busyUntil = GeneratedColumn<String>(
+    'busy_until',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _locationMeta = const VerificationMeta(
+    'location',
+  );
+  @override
+  late final GeneratedColumn<String> location = GeneratedColumn<String>(
+    'location',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -83,6 +105,8 @@ class $EmployeesTable extends Employees
     imagePath,
     isBusy,
     status,
+    busyUntil,
+    location,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -129,6 +153,18 @@ class $EmployeesTable extends Employees
         isBusy.isAcceptableOrUnknown(data['is_busy']!, _isBusyMeta),
       );
     }
+    if (data.containsKey('busy_until')) {
+      context.handle(
+        _busyUntilMeta,
+        busyUntil.isAcceptableOrUnknown(data['busy_until']!, _busyUntilMeta),
+      );
+    }
+    if (data.containsKey('location')) {
+      context.handle(
+        _locationMeta,
+        location.isAcceptableOrUnknown(data['location']!, _locationMeta),
+      );
+    }
     return context;
   }
 
@@ -164,6 +200,14 @@ class $EmployeesTable extends Employees
           data['${effectivePrefix}status'],
         )!,
       ),
+      busyUntil: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}busy_until'],
+      ),
+      location: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}location'],
+      ),
     );
   }
 
@@ -184,6 +228,8 @@ class EmployeeTableData extends DataClass
   final String imagePath;
   final bool isBusy;
   final EmployeeStatus status;
+  final String? busyUntil;
+  final String? location;
   const EmployeeTableData({
     required this.id,
     required this.name,
@@ -191,6 +237,8 @@ class EmployeeTableData extends DataClass
     required this.imagePath,
     required this.isBusy,
     required this.status,
+    this.busyUntil,
+    this.location,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -205,6 +253,12 @@ class EmployeeTableData extends DataClass
         $EmployeesTable.$converterstatus.toSql(status),
       );
     }
+    if (!nullToAbsent || busyUntil != null) {
+      map['busy_until'] = Variable<String>(busyUntil);
+    }
+    if (!nullToAbsent || location != null) {
+      map['location'] = Variable<String>(location);
+    }
     return map;
   }
 
@@ -216,6 +270,12 @@ class EmployeeTableData extends DataClass
       imagePath: Value(imagePath),
       isBusy: Value(isBusy),
       status: Value(status),
+      busyUntil: busyUntil == null && nullToAbsent
+          ? const Value.absent()
+          : Value(busyUntil),
+      location: location == null && nullToAbsent
+          ? const Value.absent()
+          : Value(location),
     );
   }
 
@@ -233,6 +293,8 @@ class EmployeeTableData extends DataClass
       status: $EmployeesTable.$converterstatus.fromJson(
         serializer.fromJson<int>(json['status']),
       ),
+      busyUntil: serializer.fromJson<String?>(json['busyUntil']),
+      location: serializer.fromJson<String?>(json['location']),
     );
   }
   @override
@@ -247,6 +309,8 @@ class EmployeeTableData extends DataClass
       'status': serializer.toJson<int>(
         $EmployeesTable.$converterstatus.toJson(status),
       ),
+      'busyUntil': serializer.toJson<String?>(busyUntil),
+      'location': serializer.toJson<String?>(location),
     };
   }
 
@@ -257,6 +321,8 @@ class EmployeeTableData extends DataClass
     String? imagePath,
     bool? isBusy,
     EmployeeStatus? status,
+    Value<String?> busyUntil = const Value.absent(),
+    Value<String?> location = const Value.absent(),
   }) => EmployeeTableData(
     id: id ?? this.id,
     name: name ?? this.name,
@@ -264,6 +330,8 @@ class EmployeeTableData extends DataClass
     imagePath: imagePath ?? this.imagePath,
     isBusy: isBusy ?? this.isBusy,
     status: status ?? this.status,
+    busyUntil: busyUntil.present ? busyUntil.value : this.busyUntil,
+    location: location.present ? location.value : this.location,
   );
   EmployeeTableData copyWithCompanion(EmployeesCompanion data) {
     return EmployeeTableData(
@@ -273,6 +341,8 @@ class EmployeeTableData extends DataClass
       imagePath: data.imagePath.present ? data.imagePath.value : this.imagePath,
       isBusy: data.isBusy.present ? data.isBusy.value : this.isBusy,
       status: data.status.present ? data.status.value : this.status,
+      busyUntil: data.busyUntil.present ? data.busyUntil.value : this.busyUntil,
+      location: data.location.present ? data.location.value : this.location,
     );
   }
 
@@ -284,14 +354,24 @@ class EmployeeTableData extends DataClass
           ..write('position: $position, ')
           ..write('imagePath: $imagePath, ')
           ..write('isBusy: $isBusy, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('busyUntil: $busyUntil, ')
+          ..write('location: $location')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, position, imagePath, isBusy, status);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    position,
+    imagePath,
+    isBusy,
+    status,
+    busyUntil,
+    location,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -301,7 +381,9 @@ class EmployeeTableData extends DataClass
           other.position == this.position &&
           other.imagePath == this.imagePath &&
           other.isBusy == this.isBusy &&
-          other.status == this.status);
+          other.status == this.status &&
+          other.busyUntil == this.busyUntil &&
+          other.location == this.location);
 }
 
 class EmployeesCompanion extends UpdateCompanion<EmployeeTableData> {
@@ -311,6 +393,8 @@ class EmployeesCompanion extends UpdateCompanion<EmployeeTableData> {
   final Value<String> imagePath;
   final Value<bool> isBusy;
   final Value<EmployeeStatus> status;
+  final Value<String?> busyUntil;
+  final Value<String?> location;
   const EmployeesCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -318,6 +402,8 @@ class EmployeesCompanion extends UpdateCompanion<EmployeeTableData> {
     this.imagePath = const Value.absent(),
     this.isBusy = const Value.absent(),
     this.status = const Value.absent(),
+    this.busyUntil = const Value.absent(),
+    this.location = const Value.absent(),
   });
   EmployeesCompanion.insert({
     this.id = const Value.absent(),
@@ -326,6 +412,8 @@ class EmployeesCompanion extends UpdateCompanion<EmployeeTableData> {
     required String imagePath,
     this.isBusy = const Value.absent(),
     required EmployeeStatus status,
+    this.busyUntil = const Value.absent(),
+    this.location = const Value.absent(),
   }) : name = Value(name),
        position = Value(position),
        imagePath = Value(imagePath),
@@ -337,6 +425,8 @@ class EmployeesCompanion extends UpdateCompanion<EmployeeTableData> {
     Expression<String>? imagePath,
     Expression<bool>? isBusy,
     Expression<int>? status,
+    Expression<String>? busyUntil,
+    Expression<String>? location,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -345,6 +435,8 @@ class EmployeesCompanion extends UpdateCompanion<EmployeeTableData> {
       if (imagePath != null) 'image_path': imagePath,
       if (isBusy != null) 'is_busy': isBusy,
       if (status != null) 'status': status,
+      if (busyUntil != null) 'busy_until': busyUntil,
+      if (location != null) 'location': location,
     });
   }
 
@@ -355,6 +447,8 @@ class EmployeesCompanion extends UpdateCompanion<EmployeeTableData> {
     Value<String>? imagePath,
     Value<bool>? isBusy,
     Value<EmployeeStatus>? status,
+    Value<String?>? busyUntil,
+    Value<String?>? location,
   }) {
     return EmployeesCompanion(
       id: id ?? this.id,
@@ -363,6 +457,8 @@ class EmployeesCompanion extends UpdateCompanion<EmployeeTableData> {
       imagePath: imagePath ?? this.imagePath,
       isBusy: isBusy ?? this.isBusy,
       status: status ?? this.status,
+      busyUntil: busyUntil ?? this.busyUntil,
+      location: location ?? this.location,
     );
   }
 
@@ -389,6 +485,12 @@ class EmployeesCompanion extends UpdateCompanion<EmployeeTableData> {
         $EmployeesTable.$converterstatus.toSql(status.value),
       );
     }
+    if (busyUntil.present) {
+      map['busy_until'] = Variable<String>(busyUntil.value);
+    }
+    if (location.present) {
+      map['location'] = Variable<String>(location.value);
+    }
     return map;
   }
 
@@ -400,7 +502,9 @@ class EmployeesCompanion extends UpdateCompanion<EmployeeTableData> {
           ..write('position: $position, ')
           ..write('imagePath: $imagePath, ')
           ..write('isBusy: $isBusy, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('busyUntil: $busyUntil, ')
+          ..write('location: $location')
           ..write(')'))
         .toString();
   }
@@ -1166,6 +1270,8 @@ typedef $$EmployeesTableCreateCompanionBuilder =
       required String imagePath,
       Value<bool> isBusy,
       required EmployeeStatus status,
+      Value<String?> busyUntil,
+      Value<String?> location,
     });
 typedef $$EmployeesTableUpdateCompanionBuilder =
     EmployeesCompanion Function({
@@ -1175,6 +1281,8 @@ typedef $$EmployeesTableUpdateCompanionBuilder =
       Value<String> imagePath,
       Value<bool> isBusy,
       Value<EmployeeStatus> status,
+      Value<String?> busyUntil,
+      Value<String?> location,
     });
 
 final class $$EmployeesTableReferences
@@ -1242,6 +1350,16 @@ class $$EmployeesTableFilterComposer
     builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
+  ColumnFilters<String> get busyUntil => $composableBuilder(
+    column: $table.busyUntil,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get location => $composableBuilder(
+    column: $table.location,
+    builder: (column) => ColumnFilters(column),
+  );
+
   Expression<bool> eventAssignmentsRefs(
     Expression<bool> Function($$EventAssignmentsTableFilterComposer f) f,
   ) {
@@ -1306,6 +1424,16 @@ class $$EmployeesTableOrderingComposer
     column: $table.status,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get busyUntil => $composableBuilder(
+    column: $table.busyUntil,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get location => $composableBuilder(
+    column: $table.location,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$EmployeesTableAnnotationComposer
@@ -1334,6 +1462,12 @@ class $$EmployeesTableAnnotationComposer
 
   GeneratedColumnWithTypeConverter<EmployeeStatus, int> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get busyUntil =>
+      $composableBuilder(column: $table.busyUntil, builder: (column) => column);
+
+  GeneratedColumn<String> get location =>
+      $composableBuilder(column: $table.location, builder: (column) => column);
 
   Expression<T> eventAssignmentsRefs<T extends Object>(
     Expression<T> Function($$EventAssignmentsTableAnnotationComposer a) f,
@@ -1395,6 +1529,8 @@ class $$EmployeesTableTableManager
                 Value<String> imagePath = const Value.absent(),
                 Value<bool> isBusy = const Value.absent(),
                 Value<EmployeeStatus> status = const Value.absent(),
+                Value<String?> busyUntil = const Value.absent(),
+                Value<String?> location = const Value.absent(),
               }) => EmployeesCompanion(
                 id: id,
                 name: name,
@@ -1402,6 +1538,8 @@ class $$EmployeesTableTableManager
                 imagePath: imagePath,
                 isBusy: isBusy,
                 status: status,
+                busyUntil: busyUntil,
+                location: location,
               ),
           createCompanionCallback:
               ({
@@ -1411,6 +1549,8 @@ class $$EmployeesTableTableManager
                 required String imagePath,
                 Value<bool> isBusy = const Value.absent(),
                 required EmployeeStatus status,
+                Value<String?> busyUntil = const Value.absent(),
+                Value<String?> location = const Value.absent(),
               }) => EmployeesCompanion.insert(
                 id: id,
                 name: name,
@@ -1418,6 +1558,8 @@ class $$EmployeesTableTableManager
                 imagePath: imagePath,
                 isBusy: isBusy,
                 status: status,
+                busyUntil: busyUntil,
+                location: location,
               ),
           withReferenceMapper: (p0) => p0
               .map(

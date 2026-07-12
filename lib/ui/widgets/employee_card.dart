@@ -79,9 +79,29 @@ class _EmployeeCardState extends ConsumerState<EmployeeCard> {
                           widget.employee.position,
                           style: const TextStyle(fontSize: 14),
                         ),
-                        Text(
-                          'Статус: ${widget.employee.status.displayName}',
-                          style: TextStyle(fontSize: 12, color: widget.employee.status.color, fontWeight: FontWeight.w600),
+                        const SizedBox(height: 4),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Статус: ${widget.employee.isBusy ? "Занят" : "Свободен"}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: widget.employee.isBusy ? Colors.red : Colors.green,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            if (widget.employee.isBusy && widget.employee.busyUntil != null && widget.employee.busyUntil!.isNotEmpty)
+                              Text(
+                                'До: ${widget.employee.busyUntil}',
+                                style: const TextStyle(fontSize: 12, color: Colors.black54),
+                              ),
+                            if (widget.employee.location != null && widget.employee.location!.isNotEmpty)
+                              Text(
+                                'Где: ${widget.employee.location}',
+                                style: const TextStyle(fontSize: 12, color: Colors.black54),
+                              ),
+                          ],
                         ),
                       ],
                     ),
@@ -134,6 +154,8 @@ class _EmployeeCardState extends ConsumerState<EmployeeCard> {
   Future<void> _editEmployee(BuildContext context) async {
     final nameController = TextEditingController(text: widget.employee.name);
     final positionController = TextEditingController(text: widget.employee.position);
+    final busyUntilController = TextEditingController(text: widget.employee.busyUntil);
+    final locationController = TextEditingController(text: widget.employee.location);
     EmployeeStatus selectedStatus = widget.employee.status;
     bool isBusy = widget.employee.isBusy;
     final formKey = GlobalKey<FormState>();
@@ -162,7 +184,7 @@ class _EmployeeCardState extends ConsumerState<EmployeeCard> {
                   const SizedBox(height: 16),
                   DropdownButtonFormField<EmployeeStatus>(
                     value: selectedStatus,
-                    decoration: const InputDecoration(labelText: 'Статус'),
+                    decoration: const InputDecoration(labelText: 'Статус (тег)'),
                     onChanged: (val) => setDialogState(() => selectedStatus = val!),
                     items: EmployeeStatus.values.map((s) => DropdownMenuItem(
                       value: s,
@@ -170,9 +192,18 @@ class _EmployeeCardState extends ConsumerState<EmployeeCard> {
                     )).toList(),
                   ),
                   SwitchListTile(
-                    title: const Text('Занят'),
+                    title: const Text('Занят сейчас'),
                     value: isBusy,
                     onChanged: (val) => setDialogState(() => isBusy = val),
+                  ),
+                  if (isBusy)
+                    TextFormField(
+                      controller: busyUntilController,
+                      decoration: const InputDecoration(labelText: 'Занят до (время/событие)'),
+                    ),
+                  TextFormField(
+                    controller: locationController,
+                    decoration: const InputDecoration(labelText: 'Местоположение'),
                   ),
                 ],
               ),
@@ -191,6 +222,8 @@ class _EmployeeCardState extends ConsumerState<EmployeeCard> {
                     imagePath: widget.employee.imagePath,
                     status: selectedStatus,
                     isBusy: isBusy,
+                    busyUntil: busyUntilController.text,
+                    location: locationController.text,
                   ));
                   if (context.mounted) Navigator.pop(context);
                 }
