@@ -55,9 +55,9 @@ class Employee {
 }
 
 final List<Employee> employees = [
-  Employee(id: '0', name: 'Эдик', position: 'Начальник', imagePath: 'assets/img/1.png', isBusy: true, status: EmployeeStatus.free, location: 'Каб. 404'),
-  Employee(id: '1', name: 'Денис', position: 'Начальник 2', imagePath: 'assets/img/1.png', isBusy: true, status: EmployeeStatus.busy, busyUntil: '14:00', location: 'Коворкинг'),
-  Employee(id: '2', name: 'Артем', position: 'Старший разработчик', imagePath: 'assets/img/1.png', isBusy: false, status: EmployeeStatus.away, location: 'Обед'),
+  Employee(id: '0', name: 'Гаспарян Эдик Арамович', position: 'Начальник', imagePath: 'assets/img/1.png', isBusy: true, status: EmployeeStatus.free, location: 'Каб. 404'),
+  Employee(id: '1', name: 'Шонин Денис', position: 'Начальник 2', imagePath: 'assets/img/1.png', isBusy: true, status: EmployeeStatus.busy, busyUntil: '14:00', location: 'Коворкинг'),
+  Employee(id: '2', name: 'Бутков Артем Александрович', position: 'Старший разработчик', imagePath: 'assets/img/1.png', isBusy: false, status: EmployeeStatus.away, location: 'Обед'),
   Employee(id: '3', name: 'Карина', position: 'Frontend разработчик', imagePath: 'assets/img/1.png', isBusy: false, status: EmployeeStatus.meeting, busyUntil: '16:30', location: 'Зал заседаний'),
   Employee(id: '4', name: 'Камила', position: 'UI/UX дизайнер', imagePath: 'assets/img/1.png', isBusy: false, status: EmployeeStatus.away, location: 'Библиотека')
 ];
