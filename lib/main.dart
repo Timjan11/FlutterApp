@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart' show initializeDateFormatting;
 import 'package:web_corp/routing/app_routing.dart';
 import 'package:web_corp/theme/app_theme.dart';
 import 'package:web_corp/providers/employeeListProvider.dart';
+import 'package:web_corp/providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Инициализация локализации для русского языка
   await initializeDateFormatting('ru_RU', null);
 
   final container = ProviderContainer();
@@ -28,14 +27,18 @@ void main() async {
   ));
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends ConsumerWidget {
   const MainApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeModeProvider);
+
     return MaterialApp.router(
       title: 'WebLab SSTU',
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
       supportedLocales: const [Locale('ru', 'RU'), Locale('en', 'US')],

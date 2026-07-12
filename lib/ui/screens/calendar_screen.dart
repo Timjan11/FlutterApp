@@ -18,13 +18,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       DateTime(date.year, date.month + 1, 0).day;
 
   int _firstDayOfMonth(DateTime date) =>
-      DateTime(date.year, date.month, 1).weekday; // 1 = ПН
+      DateTime(date.year, date.month, 1).weekday;
 
   List<DateTime?> _buildDaysList(DateTime month) {
     final daysCount = _daysInMonth(month);
     final firstDay = _firstDayOfMonth(month);
     final List<DateTime?> days = [];
-    // Невидимые ячейки перед первым днём
     for (int i = 0; i < firstDay - 1; i++) {
       days.add(null);
     }
@@ -64,7 +63,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardTheme.color,
             shape: BoxShape.circle,
             border: Border.all(color: Colors.grey.shade300, width: 1.5),
             boxShadow: [
@@ -89,16 +88,12 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
     final days = _buildDaysList(_focusedMonth);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Web-лаборатория ВУЗа'),
-        centerTitle: true,
-        elevation: 0,
-      ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           children: [
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -152,7 +147,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       itemBuilder: (context, index) {
         final date = days[index];
         if (date == null) {
-          // Прозрачная ячейка, сохраняющая размер
           return Container(
             margin: const EdgeInsets.all(4),
             color: Colors.transparent,
@@ -186,7 +180,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             ),
             child: Stack(
               children: [
-                // Число по центру
                 Center(
                   child: Text(
                     '${date.day}',
@@ -197,7 +190,6 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                     ),
                   ),
                 ),
-                // Кружочки внизу (если есть события)
                 if (types.isNotEmpty)
                   Positioned(
                     bottom: 4,
