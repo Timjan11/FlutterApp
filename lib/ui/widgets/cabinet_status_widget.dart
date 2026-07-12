@@ -7,16 +7,17 @@ class CabinetStatusWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref){
-    var status = ref.watch(cabinetStatusProvider);
+    var cabinetState = ref.watch(cabinetStatusProvider);
+    var currentCabinet = cabinetState.currentCabinet;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
       decoration: BoxDecoration(
-        color: status.color,
+        color: currentCabinet.color,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
-        "Кабинет ${status.isOpen ? 'открыт' : 'закрыт'}",
+        "Кабинет ${currentCabinet.cabinetNumber} ${currentCabinet.isOpen ? 'открыт' : 'закрыт'}",
         style: const TextStyle(
           fontSize: 20,
           fontWeight: FontWeight.w800,

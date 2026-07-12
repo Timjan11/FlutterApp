@@ -21,12 +21,13 @@ class _CabinetStatusModalState extends ConsumerState<CabinetStatusModal> {
   @override
   void initState() {
     super.initState();
-    final currentStatus = ref.read(cabinetStatusProvider);
-    _tempIsOpen = currentStatus.isOpen;
+    final cabinetState = ref.read(cabinetStatusProvider);
+    final currentCabinet = cabinetState.currentCabinet;
+    _tempIsOpen = currentCabinet.isOpen;
     _keyLocationController = TextEditingController(
-      text: currentStatus.keyLocation.isEmpty
+      text: currentCabinet.keyLocation.isEmpty
           ? "На вахте"
-          : currentStatus.keyLocation,
+          : currentCabinet.keyLocation,
     );
   }
 
