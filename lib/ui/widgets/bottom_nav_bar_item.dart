@@ -6,7 +6,6 @@ class BottomNavBarItem extends StatelessWidget {
   final String text;
   final int index;
   final int currentIndex;
-
   final IconData activeIcon;
 
   const BottomNavBarItem({
@@ -26,37 +25,35 @@ class BottomNavBarItem extends StatelessWidget {
     return Expanded(
       child: GestureDetector(
         onTap: () => onTap(index),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeInOut,
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
           decoration: BoxDecoration(
             color: isActive
-                ? Color.fromARGB(255, 0, 81, 255).withValues(alpha: 0.1)
+                ? const Color.fromARGB(255, 0, 81, 255).withValues(alpha: 0.1)
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(20),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min, // важно: сжимаем по содержимому
             children: [
               Icon(
                 isActive ? activeIcon : icon,
-                key: ValueKey(isActive),
-                color: isActive ? Color.fromARGB(255, 0, 81, 255) : Color.fromARGB(
-                    255, 99, 108, 128),
+                size: 20, // уменьшено с 24
+                color: isActive
+                    ? const Color.fromARGB(255, 0, 81, 255)
+                    : const Color.fromARGB(255, 99, 108, 128),
               ),
-
-              AnimatedDefaultTextStyle(
-                duration: const Duration(milliseconds: 200),
+              const SizedBox(height: 2), // уменьшено с 4
+              Text(
+                text,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 10, // уменьшено с 12
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                   color: isActive
                       ? const Color.fromARGB(255, 0, 81, 255)
-                      : Color.fromARGB(
-                      255, 99, 108, 128),
+                      : const Color.fromARGB(255, 99, 108, 128),
                 ),
-                child: Text(text),
               ),
             ],
           ),

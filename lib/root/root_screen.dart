@@ -14,6 +14,7 @@ class RootScreen extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
 
     return Scaffold(
+      resizeToAvoidBottomInset: false, // отключаем автоматическое изменение размера
       appBar: AppBar(
         title: const Text('WebLab SSTU'),
         actions: [
@@ -27,18 +28,29 @@ class RootScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: navigationShell,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        child: BottomNavBar(
-          currentIndex: navigationShell.currentIndex,
-          onTap: (index) => navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
+      body: Stack(
+        children: [
+          // Основное содержимое с отступом снизу для панели
+          Padding(
+            padding: const EdgeInsets.only(bottom: 90), // оставляем место для NavBar
+            child: navigationShell,
           ),
-        ),
+          // Плавающая навигационная панель
+          Positioned(
+            bottom: 16,
+            left: 16,
+            right: 16,
+            child: BottomNavBar(
+              currentIndex: navigationShell.currentIndex,
+              onTap: (index) => navigationShell.goBranch(
+                index,
+                initialLocation: index == navigationShell.currentIndex,
+              ),
+            ),
+          ),
+        ],
       ),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
     );
   }
 }
