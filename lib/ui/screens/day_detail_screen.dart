@@ -19,26 +19,18 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
   final DateFormat dateFormat = DateFormat('d MMMM yyyy', 'ru_RU');
   final DateFormat timeFormat = DateFormat('HH:mm', 'ru_RU');
 
-  Color _getTextColor(Color baseColor) {
-    final hsl = HSLColor.fromColor(baseColor);
-    final lightness = (hsl.lightness - 0.35).clamp(0.0, 1.0);
-    return hsl.withLightness(lightness).toColor();
-  }
-
   @override
   Widget build(BuildContext context) {
     final eventsAsync = ref.watch(eventsForDayProvider(widget.selectedDate));
-    
-    // Проверка: является ли день прошедшим (сравниваем только даты без времени)
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final bool isPastDay = widget.selectedDate.isBefore(today);
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(dateFormat.format(widget.selectedDate)),
         actions: [
-          // Показываем кнопку добавления только если день НЕ прошедший
           if (!isPastDay)
             IconButton(
               icon: const Icon(Icons.add),
@@ -53,38 +45,44 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
           return eventsForDay.isEmpty
               ? const Center(child: Text('Нет мероприятий на этот день'))
               : ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 16),
             itemCount: eventsForDay.length,
             itemBuilder: (context, index) {
               final event = eventsForDay[index];
-              final textColor = _getTextColor(event.type.color);
 
-              return Card(
-                color: event.type.color.withValues(alpha: 0.6),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(color: event.type.color, width: 2),
-                ),
+              return Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: event.type.color.withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: event.type.color.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Тип + меню
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            event.type.displayName,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              color: textColor,
+                            event.type.displayName.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: 1.2,
                             ),
                           ),
                           if (!isPastDay)
                             PopupMenuButton<String>(
-                              color: Colors.white,
+                              color: theme.cardTheme.color,
                               onSelected: (value) {
                                 if (value == 'edit') _showEventDialog(context, event: event);
                                 if (value == 'delete') _confirmDelete(context, event);
@@ -99,62 +97,71 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                       const SizedBox(height: 8),
                       Text(
                         event.title,
-                        style: TextStyle(
-                          fontSize: 18,
+                        style: const TextStyle(
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: textColor,
+                          color: Colors.white,
+                          height: 1.2,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6),
                       Text(
                         event.description,
-                        style: TextStyle(color: textColor),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.white,
+                          height: 1.4,
+                        ),
                       ),
-                      const SizedBox(height: 8),
-                      // Время
+                      const SizedBox(height: 14),
                       Row(
                         children: [
-                          Icon(Icons.access_time, size: 16, color: textColor),
-                          const SizedBox(width: 4),
+                          const Icon(Icons.access_time, size: 18, color: Colors.white),
+                          const SizedBox(width: 8),
                           Text(
                             '${timeFormat.format(event.startTime)} - ${timeFormat.format(event.endTime)}',
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontWeight: FontWeight.w500,
-                              color: textColor,
+                              color: Colors.white,
+                              fontSize: 15,
                             ),
                           ),
                         ],
                       ),
                       if (event.location.isNotEmpty) ...[
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 6),
                         Row(
                           children: [
-                            Icon(Icons.location_on, size: 16, color: textColor),
-                            const SizedBox(width: 4),
+                            const Icon(Icons.location_on, size: 18, color: Colors.white),
+                            const SizedBox(width: 8),
                             Text(
                               event.location,
-                              style: TextStyle(color: textColor),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                              ),
                             ),
                           ],
                         ),
                       ],
-                      const SizedBox(height: 16),
-                      Divider(color: textColor.withValues(alpha: 0.3), thickness: 1),
-                      const SizedBox(height: 12),
-
-                      // ---- Назначенные сотрудники (заголовок + кнопка +) ----
+                      const SizedBox(height: 18),
+                      Container(
+                        height: 1,
+                        color: Colors.white.withValues(alpha: 0.3),
+                      ),
+                      const SizedBox(height: 14),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.people, size: 18, color: textColor),
+                              const Icon(Icons.people, size: 20, color: Colors.white),
                               const SizedBox(width: 8),
-                              Text(
+                              const Text(
                                 'Назначенные сотрудники',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: textColor,
+                                  color: Colors.white,
                                   fontSize: 16,
                                 ),
                               ),
@@ -165,36 +172,27 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                               decoration: const BoxDecoration(
                                 color: Colors.white,
                                 shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 4,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
                               ),
                               child: IconButton(
-                                icon: const Icon(Icons.add, size: 16, color: Colors.black),
+                                icon: const Icon(Icons.add, size: 18, color: Colors.black),
                                 onPressed: () => _assignEmployees(context, event),
                                 padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                                splashRadius: 16,
+                                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                                splashRadius: 18,
                               ),
                             ),
                         ],
                       ),
-                      const SizedBox(height: 8),
-
-                      // ---- Список сотрудников с белыми контейнерами (без аватара) ----
+                      const SizedBox(height: 12),
                       if (event.assignedEmployees.isNotEmpty)
                         Column(
                           children: event.assignedEmployees.map((e) {
                             return Container(
                               margin: const EdgeInsets.symmetric(vertical: 4),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                               decoration: BoxDecoration(
                                 color: Colors.white,
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
                                 children: [
@@ -207,12 +205,13 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w600,
                                             color: Colors.black87,
+                                            fontSize: 15,
                                           ),
                                         ),
                                         Text(
                                           e.position,
                                           style: const TextStyle(
-                                            fontSize: 12,
+                                            fontSize: 13,
                                             color: Colors.black54,
                                           ),
                                         ),
@@ -220,20 +219,17 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                                     ),
                                   ),
                                   if (!isPastDay)
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 16.0),
-                                      child: IconButton(
-                                        icon: const Icon(Icons.close, size: 18),
-                                        color: Colors.red.shade400,
-                                        onPressed: () {
-                                          final updatedEmployees = event.assignedEmployees
-                                              .where((emp) => emp.id != e.id)
-                                              .toList();
-                                          ref.read(eventActionsProvider).updateEvent(
-                                            event.copyWith(assignedEmployees: updatedEmployees),
-                                          );
-                                        },
-                                      ),
+                                    IconButton(
+                                      icon: const Icon(Icons.close, size: 18),
+                                      color: Colors.red.shade400,
+                                      onPressed: () {
+                                        final updatedEmployees = event.assignedEmployees
+                                            .where((emp) => emp.id != e.id)
+                                            .toList();
+                                        ref.read(eventActionsProvider).updateEvent(
+                                          event.copyWith(assignedEmployees: updatedEmployees),
+                                        );
+                                      },
                                     ),
                                 ],
                               ),
@@ -241,9 +237,12 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                           }).toList(),
                         )
                       else
-                        Text(
+                        const Text(
                           'Нет назначенных сотрудников',
-                          style: TextStyle(color: textColor.withValues(alpha: 0.6)),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
                         ),
                     ],
                   ),
@@ -256,7 +255,7 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
     );
   }
 
-  // ---------------------- Диалог создания/редактирования ----------------------
+  // ===================== ДИАЛОГ ДОБАВЛЕНИЯ / РЕДАКТИРОВАНИЯ =====================
   Future<void> _showEventDialog(BuildContext context, {Event? event}) async {
     final titleController = TextEditingController(text: event?.title);
     final descController = TextEditingController(text: event?.description);
@@ -410,6 +409,7 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
     );
   }
 
+  // ===================== ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ =====================
   Future<void> _confirmDelete(BuildContext context, Event event) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -425,21 +425,25 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
 
     if (confirmed == true) {
       await ref.read(eventActionsProvider).deleteEvent(event.id);
+      // Обновление произойдёт автоматически через StreamProvider
     }
   }
 
+  // ===================== НАЗНАЧЕНИЕ СОТРУДНИКОВ =====================
   Future<void> _assignEmployees(BuildContext context, Event event) async {
     final result = await showDialog<List<Employee>>(
       context: context,
       builder: (context) => _AssignEmployeesDialogWithStream(event: event),
     );
     if (result != null) {
-      await ref.read(eventActionsProvider).updateEvent(event.copyWith(assignedEmployees: result));
+      await ref.read(eventActionsProvider).updateEvent(
+        event.copyWith(assignedEmployees: result),
+      );
     }
   }
 }
 
-// --------------------- Вспомогательный виджет для диалога назначения ---------------------
+// ===================== ВСПОМОГАТЕЛЬНЫЙ ВИДЖЕТ ДЛЯ ДИАЛОГА НАЗНАЧЕНИЯ =====================
 class _AssignEmployeesDialogWithStream extends ConsumerStatefulWidget {
   final Event event;
   const _AssignEmployeesDialogWithStream({required this.event});
@@ -452,14 +456,11 @@ class _AssignEmployeesDialogWithStreamState extends ConsumerState<_AssignEmploye
   @override
   Widget build(BuildContext context) {
     final employeesAsync = ref.watch(employeeListProvider);
-
     return employeesAsync.when(
-      data: (allEmployees) {
-        return AssignEmployeesDialog(
-          event: widget.event,
-          allEmployees: allEmployees,
-        );
-      },
+      data: (allEmployees) => AssignEmployeesDialog(
+        event: widget.event,
+        allEmployees: allEmployees,
+      ),
       loading: () => const AlertDialog(
         title: Text('Назначить сотрудников'),
         content: Center(child: CircularProgressIndicator()),

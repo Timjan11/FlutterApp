@@ -54,6 +54,8 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 
   Widget _buildNavButton(IconData icon, VoidCallback onPressed) {
+    final theme = Theme.of(context);
+    final isLight = theme.brightness == Brightness.light;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -63,19 +65,22 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: Theme.of(context).cardTheme.color,
+            color: theme.cardTheme.color,
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.grey.shade300, width: 1.5),
+            border: Border.all(
+              color: theme.dividerColor,
+              width: 1.5,
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: isLight ? 0.1 : 0.2),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
             ],
           ),
           child: Center(
-            child: Icon(icon, size: 20, color: Colors.black87),
+            child: Icon(icon, size: 20, color: theme.iconTheme.color),
           ),
         ),
       ),
@@ -86,9 +91,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   Widget build(BuildContext context) {
     final eventsAsync = ref.watch(allEventsProvider);
     final days = _buildDaysList(_focusedMonth);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
@@ -101,9 +107,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
                 const SizedBox(width: 20),
                 Text(
                   _getMonthName(_focusedMonth),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(width: 20),
@@ -111,15 +118,20 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            const Row(
+            Row(
               children: [
-                Expanded(child: Center(child: Text('Пн', style: TextStyle(fontWeight: FontWeight.bold)))),
-                Expanded(child: Center(child: Text('Вт', style: TextStyle(fontWeight: FontWeight.bold)))),
-                Expanded(child: Center(child: Text('Ср', style: TextStyle(fontWeight: FontWeight.bold)))),
-                Expanded(child: Center(child: Text('Чт', style: TextStyle(fontWeight: FontWeight.bold)))),
-                Expanded(child: Center(child: Text('Пт', style: TextStyle(fontWeight: FontWeight.bold)))),
-                Expanded(child: Center(child: Text('Сб', style: TextStyle(fontWeight: FontWeight.bold)))),
-                Expanded(child: Center(child: Text('Вс', style: TextStyle(fontWeight: FontWeight.bold)))),
+                for (var day in ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'])
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        day,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 8),
@@ -137,6 +149,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   }
 
   Widget _buildGrid(List<DateTime?> days, List<Event> events) {
+    final theme = Theme.of(context);
     return GridView.builder(
       key: ValueKey(_focusedMonth),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -166,15 +179,15 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
             date.year == DateTime.now().year;
 
         final Color textColor = hasEvents
-            ? Colors.black
-            : Colors.grey.shade600;
+            ? theme.colorScheme.onSurface
+            : theme.colorScheme.onSurface.withValues(alpha: 0.5);
 
         return GestureDetector(
           onTap: () => context.push('/day/${date.year}-${date.month}-${date.day}'),
           child: Container(
             margin: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: isToday ? Colors.blue : Colors.white,
+              color: isToday ? theme.primaryColor : theme.cardTheme.color,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.transparent, width: 0),
             ),

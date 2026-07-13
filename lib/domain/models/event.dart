@@ -22,11 +22,11 @@ extension EventTypeExtension on EventType {
   Color get color {
     switch (this) {
       case EventType.lecture:
-        return Colors.blue.shade300;
+        return const Color(0xFF2B7AFA); // яркий синий
       case EventType.practice:
-        return Colors.green.shade300;
+        return const Color(0xFF2E9A6E); // яркий зелёный
       case EventType.hackathon:
-        return Colors.purple.shade300;
+        return const Color(0xFF9B59B6); // яркий фиолетовый
     }
   }
 }
@@ -35,10 +35,10 @@ class Event {
   final int id;
   final String title;
   final String description;
-  final DateTime date;        // день проведения
-  final DateTime startTime;   // время начала
-  final DateTime endTime;     // время окончания
-  final String location;      // аудитория/место
+  final DateTime date;
+  final DateTime startTime;
+  final DateTime endTime;
+  final String location;
   final List<Employee> assignedEmployees;
   final EventType type;
 

@@ -4,11 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   static const Color primaryBlue = Color.fromARGB(255, 0, 81, 255);
   static const Color backgroundColorLight = Color.fromARGB(255, 231, 238, 255);
-  static const Color backgroundColorDark = Color.fromARGB(255, 18, 18, 18);
+  static const Color backgroundColorDark = Color(0xFF121212);
   static const Color surfaceLight = Colors.white;
-  static const Color surfaceDark = Color.fromARGB(255, 30, 30, 30);
+  static const Color surfaceDark = Color(0xFF2A2A2A); // чуть светлее для карточек
   static const Color textLight = Color.fromARGB(255, 33, 33, 33);
-  static const Color textDark = Color.fromARGB(255, 220, 220, 220);
+  static const Color textDark = Color(0xFFEEEEEE);   // ярче для читаемости
 
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
@@ -81,7 +81,7 @@ class AppTheme {
       primaryContainer: Color.fromARGB(255, 51, 122, 255),
       secondary: primaryBlue,
       surface: backgroundColorDark,
-      surfaceTint: Color.fromARGB(255, 50, 50, 50),
+      surfaceTint: Color(0xFF2A2A2A),
       onSurface: textDark,
     ),
     scaffoldBackgroundColor: backgroundColorDark,

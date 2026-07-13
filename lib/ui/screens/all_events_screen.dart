@@ -12,6 +12,7 @@ class AllEventsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final eventsAsync = ref.watch(allEventsProvider);
     final DateFormat dateFormat = DateFormat('d MMMM', 'ru_RU');
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
@@ -26,17 +27,15 @@ class AllEventsScreen extends ConsumerWidget {
             return const Center(child: Text('Список мероприятий пуст'));
           }
 
-          // Сортируем события по дате (от новых к старым)
-          final sortedEvents = [...events];
-          sortedEvents.sort((a, b) => b.date.compareTo(a.date));
+          final sortedEvents = [...events]..sort((a, b) => b.date.compareTo(a.date));
 
           return GridView.builder(
             padding: const EdgeInsets.all(16),
             gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 300, // Ограничиваем максимальную ширину карточки
+              maxCrossAxisExtent: 300,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: 1.1, // Делаем карточки менее вытянутыми в длину
+              childAspectRatio: 1.1,
             ),
             itemCount: sortedEvents.length,
             itemBuilder: (context, index) {
@@ -58,21 +57,24 @@ class _EventTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isLight = theme.brightness == Brightness.light;
+
     return GestureDetector(
       onTap: () => context.push('/day/${event.date.year}-${event.date.month}-${event.date.day}'),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardTheme.color,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: event.type.color.withOpacity(0.1),
+              color: event.type.color.withValues(alpha: isLight ? 0.1 : 0.3),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
           border: Border.all(
-            color: event.type.color.withOpacity(0.3),
+            color: event.type.color.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -80,7 +82,6 @@ class _EventTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           child: Stack(
             children: [
-              // Цветная полоска сверху
               Positioned(
                 top: 0,
                 left: 0,
@@ -94,35 +95,33 @@ class _EventTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: 4),
-                    // Дата
                     Text(
                       dateFormat.format(event.date),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade600,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Название
                     Expanded(
                       child: Text(
                         event.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w900,
                           height: 1.1,
+                          color: theme.colorScheme.onSurface,
                         ),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Тип (тег)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: event.type.color.withOpacity(0.2),
+                        color: event.type.color.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -130,15 +129,18 @@ class _EventTile extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: event.type.color.withOpacity(0.8),
+                          color: event.type.color.withValues(alpha: 0.8),
                         ),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // Место
                     Row(
                       children: [
-                        Icon(Icons.location_on, size: 18, color: Colors.grey.shade400),
+                        Icon(
+                          Icons.location_on,
+                          size: 18,
+                          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                        ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
@@ -148,7 +150,7 @@ class _EventTile extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
-                              color: Colors.grey.shade600,
+                              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                             ),
                           ),
                         ),

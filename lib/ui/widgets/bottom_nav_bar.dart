@@ -50,10 +50,9 @@ class BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isLight = theme.brightness == Brightness.light;
-    // Цвет фона: светлый в светлой теме, светло-серый в тёмной
     final Color bgColor = isLight
         ? Colors.white.withValues(alpha: 0.9)
-        : const Color(0xFF3A3A3A); // светло-серый, чтобы текст был виден
+        : Colors.grey.shade800.withValues(alpha: 0.9);
 
     return Container(
       height: 70,

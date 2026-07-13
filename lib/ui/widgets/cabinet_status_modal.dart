@@ -25,16 +25,14 @@ class _CabinetStatusModalState extends ConsumerState<CabinetStatusModal> {
     final currentCabinet = cabinetState.currentCabinet;
     _tempIsOpen = currentCabinet.isOpen;
     _keyLocationController = TextEditingController(
-      text: currentCabinet.keyLocation.isEmpty
-          ? "На вахте"
-          : currentCabinet.keyLocation,
+      text: currentCabinet.keyLocation.isEmpty ? "На вахте" : currentCabinet.keyLocation,
     );
   }
 
   @override
   void dispose() {
-    super.dispose();
     _keyLocationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -62,9 +60,11 @@ class _CabinetStatusModalState extends ConsumerState<CabinetStatusModal> {
                 _tempIsOpen ? Icons.lock_open : Icons.lock,
                 color: _tempIsOpen ? Colors.green : Colors.red,
               ),
-              title: Text("Статус кабинета:", style: theme.textTheme.bodyLarge?.copyWith(fontSize: 16),),
+              title: Text(
+                "Статус кабинета:",
+                style: theme.textTheme.bodyLarge?.copyWith(fontSize: 16),
+              ),
             ),
-
             ButtonApp(
               onPressed: () => setState(() => _tempIsOpen = true),
               text: "Открыт",
@@ -92,7 +92,7 @@ class _CabinetStatusModalState extends ConsumerState<CabinetStatusModal> {
               children: [
                 ButtonApp(
                   text: "Отмена",
-                  color: const Color.fromARGB(255, 72, 72, 72),
+                  color: Colors.grey.shade600,
                   onPressed: () => Navigator.of(context).pop(),
                   minSize: Size(48, 16),
                   paddingV: 18,
@@ -119,7 +119,6 @@ class _CabinetStatusModalState extends ConsumerState<CabinetStatusModal> {
     ref
         .read(cabinetStatusProvider.notifier)
         .setStatus(_tempIsOpen, _keyLocationController.text);
-
     Navigator.of(context).pop();
   }
 }

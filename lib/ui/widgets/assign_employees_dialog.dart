@@ -27,6 +27,7 @@ class _AssignEmployeesDialogState extends State<AssignEmployeesDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return AlertDialog(
       title: const Text(
         'Назначить сотрудников',
@@ -53,9 +54,20 @@ class _AssignEmployeesDialogState extends State<AssignEmployeesDialog> {
                   }
                 });
               },
-              title: Text(emp.name),
-              subtitle: Text(emp.position),
-              secondary: const Icon(Icons.person, color: Colors.grey),
+              title: Text(
+                emp.name,
+                style: TextStyle(color: theme.colorScheme.onSurface),
+              ),
+              subtitle: Text(
+                emp.position,
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+              ),
+              secondary: Icon(
+                Icons.person,
+                color: theme.iconTheme.color,
+              ),
               controlAffinity: ListTileControlAffinity.trailing,
               contentPadding: const EdgeInsets.symmetric(horizontal: 8),
               dense: true,

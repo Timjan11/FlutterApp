@@ -17,10 +17,11 @@ class _EmployeeCardState extends ConsumerState<EmployeeCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: _isTapped ? 4 : 2,
-      color: const Color.fromARGB(255, 170, 185, 255),
+      color: theme.cardTheme.color,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Column(
         children: [
@@ -69,15 +70,19 @@ class _EmployeeCardState extends ConsumerState<EmployeeCard> {
                       children: [
                         Text(
                           widget.employee.name,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           widget.employee.position,
-                          style: const TextStyle(fontSize: 14),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Column(
@@ -94,12 +99,18 @@ class _EmployeeCardState extends ConsumerState<EmployeeCard> {
                             if (widget.employee.isBusy && widget.employee.busyUntil != null && widget.employee.busyUntil!.isNotEmpty)
                               Text(
                                 'До: ${widget.employee.busyUntil}',
-                                style: const TextStyle(fontSize: 12, color: Colors.black54),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                                ),
                               ),
                             if (widget.employee.location != null && widget.employee.location!.isNotEmpty)
                               Text(
                                 'Где: ${widget.employee.location}',
-                                style: const TextStyle(fontSize: 12, color: Colors.black54),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                                ),
                               ),
                           ],
                         ),
@@ -126,7 +137,7 @@ class _EmployeeCardState extends ConsumerState<EmployeeCard> {
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(16, 12, 12, 16),
               decoration: BoxDecoration(
-                color: Colors.grey[50],
+                color: theme.cardTheme.color?.withValues(alpha: 0.5),
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(16),
                   bottomRight: Radius.circular(16),
@@ -135,11 +146,26 @@ class _EmployeeCardState extends ConsumerState<EmployeeCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Личная информация', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                    'Личная информация',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text('ID: ${widget.employee.id}'),
-                  Text('Должность: ${widget.employee.position}'),
-                  Text('Занят: ${widget.employee.isBusy ? "Да" : "Нет"}'),
+                  Text(
+                    'ID: ${widget.employee.id}',
+                    style: TextStyle(color: theme.colorScheme.onSurface),
+                  ),
+                  Text(
+                    'Должность: ${widget.employee.position}',
+                    style: TextStyle(color: theme.colorScheme.onSurface),
+                  ),
+                  Text(
+                    'Занят: ${widget.employee.isBusy ? "Да" : "Нет"}',
+                    style: TextStyle(color: theme.colorScheme.onSurface),
+                  ),
                 ],
               ),
             ),
@@ -183,7 +209,7 @@ class _EmployeeCardState extends ConsumerState<EmployeeCard> {
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<EmployeeStatus>(
-                    value: selectedStatus,
+                    initialValue: selectedStatus,
                     decoration: const InputDecoration(labelText: 'Статус (тег)'),
                     onChanged: (val) => setDialogState(() => selectedStatus = val!),
                     items: EmployeeStatus.values.map((s) => DropdownMenuItem(

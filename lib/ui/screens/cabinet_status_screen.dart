@@ -10,9 +10,11 @@ class CabinetStatusScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cabinetState = ref.watch(cabinetStatusProvider);
     final cabinets = cabinetState.cabinets;
+    final theme = Theme.of(context);
+    final isLight = theme.brightness == Brightness.light;
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 231, 238, 255),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text("Кабинеты лаборатории"),
         centerTitle: true,
@@ -30,7 +32,6 @@ class CabinetStatusScreen extends ConsumerWidget {
           final cabinet = cabinets[index];
           return GestureDetector(
             onTap: () {
-              // Устанавливаем выбранный индекс перед открытием модалки
               ref.read(cabinetStatusProvider.notifier).selectCabinet(index);
               showModalBottomSheet(
                 context: context,
@@ -41,11 +42,11 @@ class CabinetStatusScreen extends ConsumerWidget {
             },
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: theme.cardTheme.color,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: isLight ? 0.05 : 0.3),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -53,7 +54,6 @@ class CabinetStatusScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  // Шапка карточки с номером
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
@@ -61,15 +61,18 @@ class CabinetStatusScreen extends ConsumerWidget {
                       children: [
                         Text(
                           "Каб. ${cabinet.cabinetNumber}",
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.w900,
+                            color: theme.colorScheme.onSurface,
                           ),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: cabinet.isOpen ? Colors.green.shade100 : Colors.red.shade100,
+                            color: cabinet.isOpen
+                                ? Colors.green.withValues(alpha: isLight ? 0.2 : 0.3)
+                                : Colors.red.withValues(alpha: isLight ? 0.2 : 0.3),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -84,22 +87,17 @@ class CabinetStatusScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  
-                  // Изображение двери со светло-коричневым фильтром
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
-
-
-                        child: Image.asset(
-                          cabinet.isOpen ? "assets/img/охранник-открывает-дверь.jpg" : "assets/img/охранник-мем.jpg",
-                          fit: BoxFit.contain,
-                        ),
-
+                      child: Image.asset(
+                        cabinet.isOpen
+                            ? "assets/img/охранник-открывает-дверь.jpg"
+                            : "assets/img/охранник-мем.jpg",
+                        fit: BoxFit.contain,
+                      ),
                     ),
                   ),
-
-                  // Информация о ключе
                   if (!cabinet.isOpen)
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -107,19 +105,25 @@ class CabinetStatusScreen extends ConsumerWidget {
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade50,
+                          color: theme.colorScheme.surface.withValues(alpha: 0.7),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Column(
                           children: [
-                            const Text(
+                            Text(
                               "Ключ:",
-                              style: TextStyle(fontSize: 12, color: Colors.grey),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                              ),
                             ),
                             Text(
                               cabinet.keyLocation.isNotEmpty ? cabinet.keyLocation : "На вахте",
                               textAlign: TextAlign.center,
-                              style: const TextStyle(fontWeight: FontWeight.w600),
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.onSurface,
+                              ),
                             ),
                           ],
                         ),
