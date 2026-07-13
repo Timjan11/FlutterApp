@@ -28,21 +28,25 @@ class CabinetStatusNotifier extends Notifier<CabinetState> {
   CabinetState build() {
     return CabinetState(
       cabinets: [
-        CabinetStatus(cabinetNumber: "312"), // Assuming original was something else, but let's say 404 and 313
+        CabinetStatus(cabinetNumber: "312"), 
         CabinetStatus(cabinetNumber: "313"),
       ],
       selectedIndex: 0,
     );
   }
 
+  void selectCabinet(int index) {
+    state = state.copyWith(selectedIndex: index);
+  }
+
   void nextCabinet() {
-    final newIndex = (state.selectedIndex + 1) % state.cabinets.length;
-    state = state.copyWith(selectedIndex: newIndex);
+    final nextIndex = (state.selectedIndex + 1) % state.cabinets.length;
+    state = state.copyWith(selectedIndex: nextIndex);
   }
 
   void previousCabinet() {
-    final newIndex = (state.selectedIndex - 1 + state.cabinets.length) % state.cabinets.length;
-    state = state.copyWith(selectedIndex: newIndex);
+    final prevIndex = (state.selectedIndex - 1 + state.cabinets.length) % state.cabinets.length;
+    state = state.copyWith(selectedIndex: prevIndex);
   }
 
   void setStatus(bool isOpen, String keyLocation) {
