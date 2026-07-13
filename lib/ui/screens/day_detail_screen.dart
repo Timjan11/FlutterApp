@@ -28,15 +28,22 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final eventsAsync = ref.watch(eventsForDayProvider(widget.selectedDate));
+    
+    // Проверка: является ли день прошедшим (сравниваем только даты без времени)
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final bool isPastDay = widget.selectedDate.isBefore(today);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(dateFormat.format(widget.selectedDate)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _showEventDialog(context),
-          ),
+          // Показываем кнопку добавления только если день НЕ прошедший
+          if (!isPastDay)
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () => _showEventDialog(context),
+            ),
         ],
       ),
       body: eventsAsync.when(
@@ -75,17 +82,18 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                               color: textColor,
                             ),
                           ),
-                          PopupMenuButton<String>(
-                            color: Colors.white,
-                            onSelected: (value) {
-                              if (value == 'edit') _showEventDialog(context, event: event);
-                              if (value == 'delete') _confirmDelete(context, event);
-                            },
-                            itemBuilder: (context) => [
-                              const PopupMenuItem(value: 'edit', child: Text('Изменить')),
-                              const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: Colors.red))),
-                            ],
-                          ),
+                          if (!isPastDay)
+                            PopupMenuButton<String>(
+                              color: Colors.white,
+                              onSelected: (value) {
+                                if (value == 'edit') _showEventDialog(context, event: event);
+                                if (value == 'delete') _confirmDelete(context, event);
+                              },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(value: 'edit', child: Text('Изменить')),
+                                const PopupMenuItem(value: 'delete', child: Text('Удалить', style: TextStyle(color: Colors.red))),
+                              ],
+                            ),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -152,26 +160,27 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                               ),
                             ],
                           ),
-                          Container(
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
+                          if (!isPastDay)
+                            Container(
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: IconButton(
+                                icon: const Icon(Icons.add, size: 16, color: Colors.black),
+                                onPressed: () => _assignEmployees(context, event),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                                splashRadius: 16,
+                              ),
                             ),
-                            child: IconButton(
-                              icon: const Icon(Icons.add, size: 16, color: Colors.black),
-                              onPressed: () => _assignEmployees(context, event),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                              splashRadius: 16,
-                            ),
-                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -210,21 +219,22 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
                                       ],
                                     ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 16.0),
-                                    child: IconButton(
-                                      icon: const Icon(Icons.close, size: 18),
-                                      color: Colors.red.shade400,
-                                      onPressed: () {
-                                        final updatedEmployees = event.assignedEmployees
-                                            .where((emp) => emp.id != e.id)
-                                            .toList();
-                                        ref.read(eventActionsProvider).updateEvent(
-                                          event.copyWith(assignedEmployees: updatedEmployees),
-                                        );
-                                      },
+                                  if (!isPastDay)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 16.0),
+                                      child: IconButton(
+                                        icon: const Icon(Icons.close, size: 18),
+                                        color: Colors.red.shade400,
+                                        onPressed: () {
+                                          final updatedEmployees = event.assignedEmployees
+                                              .where((emp) => emp.id != e.id)
+                                              .toList();
+                                          ref.read(eventActionsProvider).updateEvent(
+                                            event.copyWith(assignedEmployees: updatedEmployees),
+                                          );
+                                        },
+                                      ),
                                     ),
-                                  ),
                                 ],
                               ),
                             );
