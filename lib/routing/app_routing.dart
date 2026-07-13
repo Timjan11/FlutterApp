@@ -5,6 +5,8 @@ import 'package:web_corp/ui/screens/calendar_screen.dart';
 import 'package:web_corp/ui/screens/employee_screen.dart';
 import 'package:web_corp/ui/screens/day_detail_screen.dart';
 
+import 'package:web_corp/ui/screens/all_events_screen.dart';
+
 final router = GoRouter(
   initialLocation: '/cabinet',
   routes: [
@@ -33,6 +35,14 @@ final router = GoRouter(
             GoRoute(
               path: '/cabinet',
               builder: (context, state) => const CabinetStatusScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: '/all_events',
+              builder: (context, state) => const AllEventsScreen(),
             ),
           ],
         ),

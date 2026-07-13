@@ -14,8 +14,9 @@ class BottomNavBar extends StatelessWidget {
 
   List<Widget> get items => [
     BottomNavBarItem(icon: Icons.door_back_door_outlined, activeIcon: Icons.door_back_door, text: "Кабинет", index: 2, currentIndex: currentIndex, onTap: onTap),
-    BottomNavBarItem(icon: Icons.people_alt, activeIcon: Icons.people_alt ,text: "Сотрудники", index: 1, currentIndex: currentIndex, onTap: onTap),
+    BottomNavBarItem(icon: Icons.people_alt_outlined, activeIcon: Icons.people_alt ,text: "Сотрудники", index: 1, currentIndex: currentIndex, onTap: onTap),
     BottomNavBarItem(icon: Icons.calendar_today_outlined, activeIcon: Icons.calendar_today ,text: "Календарь", index: 0, currentIndex: currentIndex, onTap: onTap),
+    BottomNavBarItem(icon: Icons.list_alt_rounded, activeIcon: Icons.list_alt_rounded ,text: "События", index: 3, currentIndex: currentIndex, onTap: onTap),
   ];
 
   @override
