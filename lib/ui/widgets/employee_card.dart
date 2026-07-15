@@ -5,8 +5,9 @@ import 'package:web_corp/providers/employeeListProvider.dart';
 
 class EmployeeCard extends ConsumerStatefulWidget {
   final Employee employee;
+  final bool isGrid;
 
-  const EmployeeCard({super.key, required this.employee});
+  const EmployeeCard({super.key, required this.employee, this.isGrid = false});
 
   @override
   ConsumerState<EmployeeCard> createState() => _EmployeeCardState();
@@ -19,13 +20,19 @@ class _EmployeeCardState extends ConsumerState<EmployeeCard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      clipBehavior: Clip.antiAlias, // Чтобы контент не вылезал за скругления
+      margin: widget.isGrid 
+          ? const EdgeInsets.all(0)
+          : const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: _isTapped ? 4 : 2,
       color: theme.cardTheme.color,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Column(
-        children: [
-          InkWell(
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(), // Отключаем внутренний скролл, если места хватает
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InkWell(
             onTap: () {
               setState(() {
                 _isTapped = !_isTapped;
@@ -174,8 +181,9 @@ class _EmployeeCardState extends ConsumerState<EmployeeCard> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Future<void> _editEmployee(BuildContext context) async {
     final nameController = TextEditingController(text: widget.employee.name);

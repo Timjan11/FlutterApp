@@ -10,50 +10,84 @@ class EmployeeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final employeesAsync = ref.watch(employeeListProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Заголовок и кнопка добавления
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   'Сотрудники',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
-                // Круглая кнопка добавления с иконкой person_add
                 Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
+                    color: theme.primaryColor,
                     shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: theme.primaryColor.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: IconButton(
                     icon: const Icon(Icons.person_add, color: Colors.white),
                     onPressed: () => _showEmployeeDialog(context, ref),
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                    constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
                   ),
                 ),
               ],
             ),
           ),
-          // Список сотрудников
+          
+          // Адаптивный список/плитка
           Expanded(
             child: employeesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (err, stack) => Center(child: Text('Ошибка: $err')),
-              data: (list) => ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: list.length,
-                itemBuilder: (context, index) => EmployeeCard(employee: list[index]),
+              data: (list) => LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth > 750) {
+                    // Плитка для ноутбуков и ПК
+                    return GridView.builder(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 400,
+                        crossAxisSpacing: 16,
+                        mainAxisSpacing: 16,
+                        childAspectRatio: 1.2, // Увеличили высоту
+                      ),
+                      itemCount: list.length,
+                      itemBuilder: (context, index) => EmployeeCard(
+                        employee: list[index],
+                        isGrid: true,
+                      ),
+                    );
+                  } else {
+                    // Список для мобильных
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      itemCount: list.length,
+                      itemBuilder: (context, index) => EmployeeCard(
+                        employee: list[index],
+                        isGrid: false,
+                      ),
+                    );
+                  }
+                },
               ),
             ),
           ),
@@ -62,10 +96,10 @@ class EmployeeScreen extends ConsumerWidget {
     );
   }
 
-  // Диалог добавления/редактирования сотрудника (приведён к макету)
   Future<void> _showEmployeeDialog(BuildContext context, WidgetRef ref, {Employee? employee}) async {
     final nameController = TextEditingController(text: employee?.name);
     final positionController = TextEditingController(text: employee?.position);
+    final busyUntilController = TextEditingController(text: employee?.busyUntil);
     final locationController = TextEditingController(text: employee?.location ?? '');
     EmployeeStatus selectedStatus = employee?.status ?? EmployeeStatus.free;
     bool isBusy = employee?.isBusy ?? false;
@@ -97,7 +131,7 @@ class EmployeeScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   DropdownButtonFormField<EmployeeStatus>(
                     value: selectedStatus,
-                    decoration: const InputDecoration(labelText: 'Статус'),
+                    decoration: const InputDecoration(labelText: 'Статус (тег)'),
                     onChanged: (val) => setDialogState(() => selectedStatus = val!),
                     items: EmployeeStatus.values.map((s) => DropdownMenuItem(
                       value: s,
@@ -111,7 +145,12 @@ class EmployeeScreen extends ConsumerWidget {
                     onChanged: (val) => setDialogState(() => isBusy = val),
                     contentPadding: EdgeInsets.zero,
                   ),
-                  const SizedBox(height: 4),
+                  if (isBusy)
+                    TextFormField(
+                      controller: busyUntilController,
+                      decoration: const InputDecoration(labelText: 'Занят до'),
+                    ),
+                  const SizedBox(height: 12),
                   TextFormField(
                     controller: locationController,
                     decoration: const InputDecoration(labelText: 'Местоположение'),
@@ -129,20 +168,21 @@ class EmployeeScreen extends ConsumerWidget {
               onPressed: () async {
                 if (formKey.currentState!.validate()) {
                   final actions = ref.read(employeeActionsProvider);
-                  final newEmployee = Employee(
+                  final updatedEmployee = Employee(
                     id: employee?.id ?? '0',
                     name: nameController.text,
                     position: positionController.text,
                     imagePath: 'assets/img/1.png',
                     status: selectedStatus,
                     isBusy: isBusy,
+                    busyUntil: busyUntilController.text,
                     location: locationController.text,
                   );
 
                   if (employee == null) {
-                    await actions.addEmployee(newEmployee);
+                    await actions.addEmployee(updatedEmployee);
                   } else {
-                    await actions.updateEmployee(newEmployee);
+                    await actions.updateEmployee(updatedEmployee);
                   }
                   if (context.mounted) Navigator.pop(context);
                 }

@@ -95,54 +95,59 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+      body: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1000), // Ограничиваем ширину для ПК
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
               children: [
-                _buildNavButton(Icons.arrow_back_ios, _previousMonth),
-                const SizedBox(width: 20),
-                Text(
-                  _getMonthName(_focusedMonth),
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(width: 20),
-                _buildNavButton(Icons.arrow_forward_ios, _nextMonth),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                for (var day in ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'])
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        day,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onSurface,
-                        ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildNavButton(Icons.arrow_back_ios, _previousMonth),
+                    const SizedBox(width: 20),
+                    Text(
+                      _getMonthName(_focusedMonth),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
+                    const SizedBox(width: 20),
+                    _buildNavButton(Icons.arrow_forward_ios, _nextMonth),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    for (var day in ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'])
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            day,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: eventsAsync.when(
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (err, stack) => Center(child: Text('Ошибка загрузки: $err')),
+                    data: (events) => _buildGrid(days, events),
                   ),
+                ),
               ],
             ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: eventsAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (err, stack) => Center(child: Text('Ошибка загрузки: $err')),
-                data: (events) => _buildGrid(days, events),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
