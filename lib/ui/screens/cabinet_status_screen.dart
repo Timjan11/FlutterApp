@@ -92,8 +92,8 @@ class CabinetStatusScreen extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
                       child: Image.asset(
                         cabinet.isOpen
-                            ? "assets/img/охранник-открывает-дверь.jpg"
-                            : "assets/img/охранник-мем.jpg",
+                            ? "assets/img/door_is_open.jpg"
+                            : "assets/img/door_is_close.jpg",
                         fit: BoxFit.contain,
                       ),
                     ),
