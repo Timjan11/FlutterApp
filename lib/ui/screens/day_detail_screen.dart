@@ -255,7 +255,6 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
     );
   }
 
-  // ===================== ДИАЛОГ ДОБАВЛЕНИЯ / РЕДАКТИРОВАНИЯ =====================
   Future<void> _showEventDialog(BuildContext context, {Event? event}) async {
     final titleController = TextEditingController(text: event?.title);
     final descController = TextEditingController(text: event?.description);
@@ -409,7 +408,6 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
     );
   }
 
-  // ===================== ПОДТВЕРЖДЕНИЕ УДАЛЕНИЯ =====================
   Future<void> _confirmDelete(BuildContext context, Event event) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -425,11 +423,9 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
 
     if (confirmed == true) {
       await ref.read(eventActionsProvider).deleteEvent(event.id);
-      // Обновление произойдёт автоматически через StreamProvider
     }
   }
 
-  // ===================== НАЗНАЧЕНИЕ СОТРУДНИКОВ =====================
   Future<void> _assignEmployees(BuildContext context, Event event) async {
     final result = await showDialog<List<Employee>>(
       context: context,
@@ -443,7 +439,6 @@ class _DayDetailScreenState extends ConsumerState<DayDetailScreen> {
   }
 }
 
-// ===================== ВСПОМОГАТЕЛЬНЫЙ ВИДЖЕТ ДЛЯ ДИАЛОГА НАЗНАЧЕНИЯ =====================
 class _AssignEmployeesDialogWithStream extends ConsumerStatefulWidget {
   final Event event;
   const _AssignEmployeesDialogWithStream({required this.event});

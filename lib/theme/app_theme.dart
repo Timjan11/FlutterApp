@@ -6,9 +6,9 @@ class AppTheme {
   static const Color backgroundColorLight = Color.fromARGB(255, 231, 238, 255);
   static const Color backgroundColorDark = Color(0xFF121212);
   static const Color surfaceLight = Colors.white;
-  static const Color surfaceDark = Color(0xFF2A2A2A); // чуть светлее для карточек
+  static const Color surfaceDark = Color(0xFF2A2A2A);
   static const Color textLight = Color.fromARGB(255, 33, 33, 33);
-  static const Color textDark = Color(0xFFEEEEEE);   // ярче для читаемости
+  static const Color textDark = Color(0xFFEEEEEE);
 
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,

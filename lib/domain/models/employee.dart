@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 enum EmployeeStatus {
-  free,    // Свободен
-  busy,    // Занят
-  away,    // Отошел
-  meeting; // На совещании
+  free,
+  busy,
+  away,
+  meeting;
 
   String get displayName {
     switch (this) {

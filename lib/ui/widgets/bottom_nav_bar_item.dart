@@ -35,20 +35,20 @@ class BottomNavBarItem extends StatelessWidget {
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min, // важно: сжимаем по содержимому
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 isActive ? activeIcon : icon,
-                size: 20, // уменьшено с 24
+                size: 20,
                 color: isActive
                     ? const Color.fromARGB(255, 0, 81, 255)
                     : const Color.fromARGB(255, 99, 108, 128),
               ),
-              const SizedBox(height: 2), // уменьшено с 4
+              const SizedBox(height: 2),
               Text(
                 text,
                 style: TextStyle(
-                  fontSize: 10, // уменьшено с 12
+                  fontSize: 10,
                   fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
                   color: isActive
                       ? const Color.fromARGB(255, 0, 81, 255)

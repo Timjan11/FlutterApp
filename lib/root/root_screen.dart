@@ -14,7 +14,7 @@ class RootScreen extends ConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
 
     return Scaffold(
-      resizeToAvoidBottomInset: false, // отключаем автоматическое изменение размера
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text('WebLab SSTU'),
         actions: [
@@ -30,12 +30,10 @@ class RootScreen extends ConsumerWidget {
       ),
       body: Stack(
         children: [
-          // Основное содержимое с отступом снизу для панели
           Padding(
-            padding: const EdgeInsets.only(bottom: 90), // оставляем место для NavBar
+            padding: const EdgeInsets.only(bottom: 90),
             child: navigationShell,
           ),
-          // Плавающая навигационная панель
           Positioned(
             bottom: 16,
             left: 16,

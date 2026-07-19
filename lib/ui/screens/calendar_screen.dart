@@ -97,7 +97,7 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
       backgroundColor: theme.scaffoldBackgroundColor,
       body: Center(
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 1000), // Ограничиваем ширину для ПК
+          constraints: const BoxConstraints(maxWidth: 1000),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: Column(

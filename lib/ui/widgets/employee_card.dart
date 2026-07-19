@@ -20,7 +20,7 @@ class _EmployeeCardState extends ConsumerState<EmployeeCard> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Card(
-      clipBehavior: Clip.antiAlias, // Чтобы контент не вылезал за скругления
+      clipBehavior: Clip.antiAlias,
       margin: widget.isGrid 
           ? const EdgeInsets.all(0)
           : const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -28,7 +28,7 @@ class _EmployeeCardState extends ConsumerState<EmployeeCard> {
       color: theme.cardTheme.color,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(), // Отключаем внутренний скролл, если места хватает
+        physics: const NeverScrollableScrollPhysics(),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

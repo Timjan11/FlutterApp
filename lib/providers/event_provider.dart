@@ -6,14 +6,12 @@ import '../database/app_database.dart';
 import '../database/daos/event_dao.dart';
 import 'database_provider.dart';
 
-// Стрим-провайдер для всех мероприятий
 final allEventsProvider = StreamProvider<List<Event>>((ref) {
   final eventDao = ref.watch(eventDaoProvider);
 
   return eventDao.watchAllEvents().map((list) {
     return list.map((item) {
       final event = item.event;
-      // Устанавливаем значения по умолчанию, если в БД null (для старых записей)
       final startTime = event.startTime ?? DateTime(event.date.year, event.date.month, event.date.day, 9, 0);
       final endTime = event.endTime ?? DateTime(event.date.year, event.date.month, event.date.day, 18, 0);
       final location = event.location ?? '';
@@ -40,7 +38,6 @@ final allEventsProvider = StreamProvider<List<Event>>((ref) {
   });
 });
 
-// Стрим-провайдер для мероприятий на день
   final eventsForDayProvider = StreamProvider.family<List<Event>, DateTime>((ref, day) {
   final eventDao = ref.watch(eventDaoProvider);
 
@@ -88,9 +85,9 @@ class EventActions {
         title: event.title,
         description: event.description,
         date: event.date,
-        startTime: Value(event.startTime), // обёрнуто в Value
-        endTime: Value(event.endTime),     // обёрнуто в Value
-        location: Value(event.location),   // обёрнуто в Value
+        startTime: Value(event.startTime),
+        endTime: Value(event.endTime),
+        location: Value(event.location),
         type: Value(event.type),
       ),
       event.assignedEmployees.map((e) => int.parse(e.id)).toList(),

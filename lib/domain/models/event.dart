@@ -22,11 +22,11 @@ extension EventTypeExtension on EventType {
   Color get color {
     switch (this) {
       case EventType.lecture:
-        return const Color(0xFF2B7AFA); // яркий синий
+        return const Color(0xFF2B7AFA);
       case EventType.practice:
-        return const Color(0xFF2E9A6E); // яркий зелёный
+        return const Color(0xFF2E9A6E);
       case EventType.hackathon:
-        return const Color(0xFF9B59B6); // яркий фиолетовый
+        return const Color(0xFF9B59B6);
     }
   }
 }

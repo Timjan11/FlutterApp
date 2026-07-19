@@ -69,8 +69,6 @@ class EventDao extends DatabaseAccessor<AppDatabase> with _$EventDaoMixin {
   Stream<List<EventWithEmployees>> watchEventsForDay(DateTime day) {
     final start = DateTime(day.year, day.month, day.day);
     final end = start.add(const Duration(days: 1));
-    // Используем isBetweenValues с корректным диапазоном [start, end)
-    // Для исключения правой границы вычитаем 1 микросекунду.
     final endExclusive = end.subtract(const Duration(microseconds: 1));
     return (select(events)
       ..where((t) => t.date.isBetweenValues(start, endExclusive)))

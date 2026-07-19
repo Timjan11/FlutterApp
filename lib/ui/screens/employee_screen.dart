@@ -17,7 +17,6 @@ class EmployeeScreen extends ConsumerWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Заголовок и кнопка добавления
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
             child: Row(
@@ -53,7 +52,6 @@ class EmployeeScreen extends ConsumerWidget {
             ),
           ),
           
-          // Адаптивный список/плитка
           Expanded(
             child: employeesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
@@ -61,14 +59,13 @@ class EmployeeScreen extends ConsumerWidget {
               data: (list) => LayoutBuilder(
                 builder: (context, constraints) {
                   if (constraints.maxWidth > 750) {
-                    // Плитка для ноутбуков и ПК
                     return GridView.builder(
                       padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                         maxCrossAxisExtent: 400,
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        childAspectRatio: 1.2, // Увеличили высоту
+                        childAspectRatio: 1.2,
                       ),
                       itemCount: list.length,
                       itemBuilder: (context, index) => EmployeeCard(
@@ -77,7 +74,6 @@ class EmployeeScreen extends ConsumerWidget {
                       ),
                     );
                   } else {
-                    // Список для мобильных
                     return ListView.builder(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       itemCount: list.length,
